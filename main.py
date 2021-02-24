@@ -81,63 +81,62 @@ def main(dataset):
    
     #5-fold training
     fold = pproc.load_data_k_fold('cached/'+dataset)
-    #trX, trY, teX, teY = pproc.load_processed_data('cached/' + dataset)
-    trX, trY, teX, teY = next(fold)
-    #print(len(trX), len(trY), len(teX), len(teY))
-    trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
-    trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):]
-    trX = torch.from_numpy(trX).float()
-    trY = torch.from_numpy(trY).long()
-    teX = torch.from_numpy(teX).float()
-    teY = torch.from_numpy(teY).long()
-    trX = trX.reshape(trX.shape[0], 1, trX.shape[1])
-    teX = teX.reshape(teX.shape[0], 1, teX.shape[1])
-    trX_val = torch.from_numpy(trX_val).float()
-    trY_val = torch.from_numpy(trY_val).long()
-    trX_val = trX_val.reshape(trX_val.shape[0], 1, trX_val.shape[1])    
+    for fold_i in range(5):
+        trX, trY, teX, teY = next(fold)
+        trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
+        trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):]
+        trX = torch.from_numpy(trX).float()
+        trY = torch.from_numpy(trY).long()
+        teX = torch.from_numpy(teX).float()
+        teY = torch.from_numpy(teY).long()
+        trX = trX.reshape(trX.shape[0], 1, trX.shape[1])
+        teX = teX.reshape(teX.shape[0], 1, teX.shape[1])
+        trX_val = torch.from_numpy(trX_val).float()
+        trY_val = torch.from_numpy(trY_val).long()
+        trX_val = trX_val.reshape(trX_val.shape[0], 1, trX_val.shape[1])    
 
-    train_size = len(trY)
-    test_size  = len(trY_val)
-    n_classes  = 4
-    seq_length = trX.shape[1]
-    batch_size = 2000
-    epochs     = 30
-    channel_sizes = [25]*5
-    steps = 0
-    lr = 0.01
-    
-    model = TCN(1, n_classes, channel_sizes, kernel_size=5, dropout=0.3)
-    model.cuda()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    num_test_batches = test_size//batch_size
+        train_size = len(trY)
+        test_size  = len(trY_val)
+        n_classes  = 4
+        seq_length = trX.shape[1]
+        batch_size = 2048
+        epochs     = 25
+        channel_sizes = [25]*5
+        steps = 0
+        lr = 0.01
+        
+        model = TCN(1, n_classes, channel_sizes, kernel_size=5, dropout=0.3)
+        model.cuda()
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        num_test_batches = test_size//batch_size
 
-    for epoch in range(1, epochs+1):
-        cost = 0
-        num_batches = train_size//batch_size
-        for k in range(num_batches):
-            start, end = k * batch_size, (k+1) * batch_size
-            cost += train(model, optimizer, trX[start:end,:], trY[start:end])
-            steps += seq_length
-            if k > 0 and k % (num_batches//5) == 0:
-                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tSteps: {}'.format(
-                    epoch, start, train_size,
-                    100 * k / num_batches, cost/batch_size, steps 
-                ), end='\r')
-                cost = 0
-        print_test(model, num_test_batches, batch_size, trX_val, trY_val)
-        if epoch % 10 == 0:
-            lr /= 5
-            for param_group in optimizer.param_groups:
-                param_group['lr'] = lr
-    
-    print('\nFINAL TEST:\n--------------')
-    print_test(model, num_test_batches, batch_size, teX, teY)
-    model_path = 'models/tcn_model_BS-{}_LAYERS-{}_EPOCHS-{}.pt'.format(
-        batch_size, len(channel_sizes), epochs
-    )
-    if not os.path.exists('models'):
-        os.makedirs('models')
-    torch.save(model.state_dict(), model_path)
+        for epoch in range(1, epochs+1):
+            cost = 0
+            num_batches = train_size//batch_size
+            for k in range(num_batches):
+                start, end = k * batch_size, (k+1) * batch_size
+                cost += train(model, optimizer, trX[start:end,:], trY[start:end])
+                steps += seq_length
+                if k > 0 and k % (num_batches//5) == 0:
+                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tSteps: {}'.format(
+                        epoch, start, train_size,
+                        100 * k / num_batches, cost/batch_size, steps 
+                    ), end='\r')
+                    cost = 0
+            print_test(model, num_test_batches, batch_size, trX_val, trY_val)
+            if epoch % 10 == 0:
+                lr /= 5
+                for param_group in optimizer.param_groups:
+                    param_group['lr'] = lr
+        
+        print(f'\nFINAL TEST - fold {fold_i+1}:\n--------------')
+        print_test(model, num_test_batches, batch_size, teX, teY)
+        model_path = 'models/tcn_model_BS-{}_LAYERS-{}_EPOCHS-{}_FOLD-{}.pt'.format(
+            batch_size, len(channel_sizes), epochs, fold_i+1
+        )
+        if not os.path.exists('models'):
+            os.makedirs('models')
+        torch.save(model.state_dict(), model_path)
 
 
 if __name__=="__main__":
