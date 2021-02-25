@@ -49,7 +49,16 @@ def f1_score(preds, labels, class_id):
     return f1.item()
 
 
-def print_test(model, num_test_batches, batch_size, trX_val, trY_val):
+def save_test_output(model_path, preds, labels):
+    output_path = 'outputs/' + model_path
+    if not os.path.exists('outputs'):
+        os.makedirs('outputs')
+    preds = preds.cpu()
+    labels = labels.cpu()
+    np.savez(output_path, pred=preds.numpy(), gt=labels.numpy())
+
+
+def predict(model, num_test_batches, batch_size, trX_val, trY_val):
     total_pred = torch.Tensor([]).cuda()
     total_label = torch.Tensor([]).cuda()
     test_loss = 0
@@ -61,6 +70,10 @@ def print_test(model, num_test_batches, batch_size, trX_val, trY_val):
         total_pred = torch.cat([total_pred, preds], dim=0)
         total_label = torch.cat([total_label, labels], dim=0)
     test_loss /= test_size
+    return test_loss, total_pred, total_label
+
+
+def print_scores(total_pred, total_label, test_loss):
     f1_fix = f1_score(total_pred, total_label, 0)*100
     f1_sacc = f1_score(total_pred, total_label, 1)*100
     f1_sp = f1_score(total_pred, total_label, 2)*100
@@ -71,6 +84,7 @@ def print_test(model, num_test_batches, batch_size, trX_val, trY_val):
 
 
 def main(dataset):
+    torch.manual_seed(0)
     print("Loading data...")
     pproc = preprocessor.Preprocessor(offset=-1)
     if not os.path.exists("cached/" + dataset):
@@ -100,7 +114,7 @@ def main(dataset):
         n_classes  = 4
         seq_length = trX.shape[1]
         batch_size = 2048
-        epochs     = 25
+        epochs     = 3
         channel_sizes = [25]*5
         steps = 0
         lr = 0.01
@@ -123,20 +137,23 @@ def main(dataset):
                         100 * k / num_batches, cost/batch_size, steps 
                     ), end='\r')
                     cost = 0
-            print_test(model, num_test_batches, batch_size, trX_val, trY_val)
-            if epoch % 10 == 0:
+            t_loss, preds, labels = predict(model, num_test_batches, batch_size, trX_val, trY_val)
+            print_scores(preds, labels, t_loss)
+            if epoch % 8 == 0:
                 lr /= 5
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
         
         print(f'\nFINAL TEST - fold {fold_i+1}:\n--------------')
-        print_test(model, num_test_batches, batch_size, teX, teY)
-        model_path = 'models/tcn_model_BS-{}_LAYERS-{}_EPOCHS-{}_FOLD-{}.pt'.format(
+        t_loss, preds, labels = predict(model, num_test_batches, batch_size, teX, teY)
+        print_scores(preds, labels, t_loss)
+        model_param = "tcn_model_BS-{}_LAYERS-{}_EPOCHS-{}_FOLD-{}".format(
             batch_size, len(channel_sizes), epochs, fold_i+1
         )
+        save_test_output(model_param, preds, labels)
         if not os.path.exists('models'):
             os.makedirs('models')
-        torch.save(model.state_dict(), model_path)
+        torch.save(model.state_dict(), 'models/' + model_param + '.pt')
 
 
 if __name__=="__main__":

@@ -2,7 +2,9 @@ cached/
 data/
 etra2016-ibdt-dataset/
 models/
+outputs/
 __pycache__
 *.tgz
 *.pdf
 *.zip
+results.md

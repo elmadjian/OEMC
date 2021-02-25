@@ -73,7 +73,6 @@ class Preprocessor():
             yield train_X, train_Y, test_X, test_Y
 
 
-
     def load_file(self, file_path):
         data = pd.read_csv(file_path, sep='\t')
         if 'Filename' in data.columns:
