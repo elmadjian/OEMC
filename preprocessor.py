@@ -146,7 +146,7 @@ class Preprocessor():
 
 if __name__=='__main__':
     preprocessor = Preprocessor()
-    #preprocessor.process_folder('data/', 'cached/hmr/')
+    #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
     preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
     #preprocessor.load_processed_data('cached/')
 

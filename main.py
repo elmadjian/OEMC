@@ -114,7 +114,7 @@ def main(dataset):
         n_classes  = 4
         seq_length = trX.shape[1]
         batch_size = 2048
-        epochs     = 3
+        epochs     = 25
         channel_sizes = [25]*5
         steps = 0
         lr = 0.01
