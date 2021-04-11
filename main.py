@@ -114,12 +114,12 @@ def main(dataset):
         n_classes  = 4
         seq_length = trX.shape[1]
         batch_size = 2048
-        epochs     = 3
+        epochs     = 25
         channel_sizes = [25]*5
         steps = 0
         lr = 0.01
         
-        model = TCN(1, n_classes, channel_sizes, kernel_size=5, dropout=0.3)
+        model = TCN(1, n_classes, channel_sizes, kernel_size=5, dropout=0.25)
         model.cuda()
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         num_test_batches = test_size//batch_size
@@ -139,7 +139,7 @@ def main(dataset):
                     cost = 0
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, trX_val, trY_val)
             print_scores(preds, labels, t_loss)
-            if epoch % 8 == 0:
+            if epoch % 6 == 0:
                 lr /= 5
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr

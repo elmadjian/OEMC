@@ -102,5 +102,5 @@ class Scorer():
 
 
 if __name__=="__main__":
-    scorer = Scorer('outputs/', 'tcn_model_BS-2048_LAYERS-5_EPOCHS-3_FOLD-', 5)
+    scorer = Scorer('outputs/', 'tcn_model_BS-2048_LAYERS-5_EPOCHS-25_FOLD-', 5)
     scorer.score()
