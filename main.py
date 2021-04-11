@@ -5,7 +5,6 @@ import preprocessor
 import os
 import numpy as np
 
-#TODO: gravar a saída da classificação em um arquivo pra rodar em um scorer
 #TODO: modificar o preprocessor pra dar suporte a entradas de diferentes frequências
 #TODO: implementar um "classificador online" para rodar em tempo real
 
@@ -153,8 +152,8 @@ def main(dataset):
         print(f'\nFINAL TEST - fold {fold_i+1}:\n--------------')
         t_loss, preds, labels = predict(model, num_test_batches, batch_size, teX, teY)
         print_scores(preds, labels, t_loss)
-        model_param = "tcn_model_BS-{}_LAYERS-{}_EPOCHS-{}_FOLD-{}".format(
-            batch_size, len(channel_sizes), epochs, fold_i+1
+        model_param = "tcn_model_{}_BATCH-{}_LAYERS-{}_EPOCHS-{}_FOLD-{}".format(
+            dataset, batch_size, len(channel_sizes), epochs, fold_i+1
         )
         save_test_output(model_param, preds, labels)
         if not os.path.exists('models'):
