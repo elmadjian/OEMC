@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 import os
 import re
+from concurrent.futures import ProcessPoolExecutor
 
 
 class Preprocessor():
@@ -28,12 +29,31 @@ class Preprocessor():
                 outfile = os.path.join(out_path, patt[0], f[:-4])
                 print(f'>>> extracting features from {src}...')
                 data = self.load_file(src)
-                X,Y = self.process_data(data, 15, self.offset)
+                X,Y = self.process_data(data, self.stride, self.offset)
                 self.save_processed_file(X, Y, outfile)
 
 
-    def process_folder_parallel(self, base_path, out_path):
-        pass
+    def process_folder_parallel(self, base_path, out_path, workers):
+        srcs, outfiles = [], []
+        for dirpath, dirnames, files in os.walk(base_path):
+            for f in files:
+                src = os.path.join(dirpath, f)
+                srcs.append(src)
+                patt = re.findall(".*\/(.*)\/[A-Z]*", src)
+                outpath = os.path.join(out_path, patt[0])
+                if not os.path.exists(outpath):
+                    os.makedirs(outpath)
+                outfile = os.path.join(out_path, patt[0], f[:-4])
+                outfiles.append(outfile)
+        with ProcessPoolExecutor(max_workers=workers) as executor:
+            executor.map(self._process_one, srcs, outfiles, timeout=90)
+
+    
+    def _process_one(self, src, outfile):
+        print(f'>>> extracting features from {src}...')
+        data = self.load_file(src)
+        X,Y = self.process_data(data, self.stride, self.offset)
+        self.save_processed_file(X, Y, outfile)
 
 
     def load_processed_data(self, base_path, ratio=0.8):
@@ -64,7 +84,7 @@ class Preprocessor():
         '''
         for k in range(folds):
             print(f'>>> Loading fold {k+1}...')
-            train_X, test_X = np.empty((0,28)), np.empty((0,28))
+            train_X, test_X = np.empty((0,25)), np.empty((0,25))
             train_Y, test_Y = np.empty((0,)), np.empty((0,))
             for dirpath, dirnames, files in os.walk(base_path):
                 for f in files:
@@ -160,7 +180,9 @@ class Preprocessor():
 
 if __name__=='__main__':
     preprocessor = Preprocessor()
-    preprocessor.process_folder('data_hmr/', 'cached/hmr/')
+    #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
+    #preprocessor.process_folder('data_gazecom', 'cached/gazecom/')
+    preprocessor.process_folder_parallel('data_gazecom/', 'cached/gazecom/', 12)
     #preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
     #preprocessor.load_processed_data('cached/')
 

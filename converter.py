@@ -74,7 +74,7 @@ class Converter_ARFF():
                 outpath = os.path.join(out_path, patt[0])
                 if not os.path.exists(outpath):
                     os.makedirs(outpath)
-                outfile = os.path.join(out_path, patt[0], f[:-3]+'.csv')  
+                outfile = os.path.join(out_path, patt[0], f[:-5]+'.csv')  
                 print(f">>> Converting {src} to CSV...")  
                 output = self.convert_file(src) 
                 with open(outfile, 'w') as f:
