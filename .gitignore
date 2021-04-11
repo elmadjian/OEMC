@@ -1,10 +1,15 @@
 cached/
 data/
-etra2016-ibdt-dataset/
+etra2016-ibdt*
+gazecom_arff/
+data_hmr/
+data_gazecom/
 models/
 outputs/
+toy_set/
 __pycache__
 *.tgz
 *.pdf
 *.zip
+*.avi
 results.md

@@ -5,6 +5,10 @@ import preprocessor
 import os
 import numpy as np
 
+#TODO: gravar a saída da classificação em um arquivo pra rodar em um scorer
+#TODO: modificar o preprocessor pra dar suporte a entradas de diferentes frequências
+#TODO: implementar um "classificador online" para rodar em tempo real
+
 
 def train(model, optimizer, x_val, y_val):
     model.train()
@@ -89,12 +93,14 @@ def main(dataset):
     pproc = preprocessor.Preprocessor(offset=-1)
     if not os.path.exists("cached/" + dataset):
         if dataset == 'hmr':
-            pproc.process_folder('data/', 'cached/hmr/')
+            pproc.process_folder_parallel('data_hmr/', 'cached/hmr/')
         elif dataset == 'ibdt':
-            pproc.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
+            pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
+        elif dataset == 'gazecom':
+            pproc.process_folder_parallel('data_gazecom/', 'cached/gazecom/')
    
     #5-fold training
-    fold = pproc.load_data_k_fold('cached/'+dataset)
+    fold = pproc.load_data_k_fold_parallel('cached/'+dataset)
     for fold_i in range(5):
         trX, trY, teX, teY = next(fold)
         trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
@@ -157,5 +163,6 @@ def main(dataset):
 
 
 if __name__=="__main__":
-    main('hmr')
+    #main('hmr')
     #main('ibdt')
+    main('gazecom')
