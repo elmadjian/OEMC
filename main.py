@@ -5,6 +5,10 @@ import preprocessor
 import os
 import numpy as np
 
+#TODO: gravar a saída da classificação em um arquivo pra rodar em um scorer
+#TODO: modificar o preprocessor pra dar suporte a entradas de diferentes frequências
+#TODO: implementar um "classificador online" para rodar em tempo real
+
 
 def train(model, optimizer, x_val, y_val):
     model.train()

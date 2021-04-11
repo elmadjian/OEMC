@@ -4,15 +4,20 @@ import torch
 import os
 import re
 
+
 class Preprocessor():
 
-    def __init__(self, frequency=200, offset=1):
-        self.window = frequency
-        self.latency = 1/frequency
+    def __init__(self, stride=9, frequency=200, offset=1):
         self.offset = offset
+        self.stride = stride
 
 
     def process_folder(self, base_path, out_path):
+        '''
+        Extract features from a folder containing the
+        dataset. The processed files are stored in an
+        optimized format for fast I/O
+        '''
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
                 src = os.path.join(dirpath, f)
@@ -23,8 +28,12 @@ class Preprocessor():
                 outfile = os.path.join(out_path, patt[0], f[:-4])
                 print(f'>>> extracting features from {src}...')
                 data = self.load_file(src)
-                X,Y = self.process_data(data, 9, self.offset)
+                X,Y = self.process_data(data, 15, self.offset)
                 self.save_processed_file(X, Y, outfile)
+
+
+    def process_folder_parallel(self, base_path, out_path):
+        pass
 
 
     def load_processed_data(self, base_path, ratio=0.8):
@@ -74,6 +83,9 @@ class Preprocessor():
 
 
     def load_file(self, file_path):
+        '''
+        Read a single file and convert it to DataFrame
+        '''
         data = pd.read_csv(file_path, sep='\t')
         if 'Filename' in data.columns:
             return data.drop(['Filename'], axis=1)
@@ -90,11 +102,13 @@ class Preprocessor():
         stride: number of multiscale windows of powers of 2, i.e.:
                 window sizes for stride 3 -> 1, 2, 4
                 window sizes for stride 5 -> 1, 2, 4, 8, 16 
-        target_offsert: position of the target in w.r.t. the 
-                        last sample of the window
+        target_offset: position of the target in w.r.t. the 
+                       last sample of the window. E.g.,
+                       an offset of 1 = next sample is the target
+                       an offset of -5 = look-ahead of 5 
         '''
         feat_list, target_list = [],[]
-        for i in range(2**(stride-1), len(data)-1):
+        for i in range(int(1.5**(stride-1)), len(data)-1):
             features = self.extract_features(data, i, stride)
             target = self._convert_label(data.loc[i+target_offset,'Pattern'])
             feat_list.append(features)
@@ -109,7 +123,7 @@ class Preprocessor():
         x_ini = data.loc[i,'X_coord']
         y_ini = data.loc[i,'Y_coord']
         c_ini = data.loc[i,'Confidence']
-        strides = [2**val for val in range(stride)]
+        strides = [int(1.5**val) for val in range(1,stride)]
         speeds, directions, confs = [],[],[c_ini]
         for j in strides:
             pos = i-j
@@ -146,7 +160,7 @@ class Preprocessor():
 
 if __name__=='__main__':
     preprocessor = Preprocessor()
-    #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
-    preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
+    preprocessor.process_folder('data_hmr/', 'cached/hmr/')
+    #preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
     #preprocessor.load_processed_data('cached/')
 
