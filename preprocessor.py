@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 import os
 import re
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 
 class Preprocessor():
@@ -11,6 +11,8 @@ class Preprocessor():
     def __init__(self, stride=9, frequency=200, offset=1):
         self.offset = offset
         self.stride = stride
+        self.train_X, self.test_X = np.empty((0,28)), np.empty((0,28))
+        self.train_Y, self.test_Y = np.empty((0,)), np.empty((0,))
 
 
     def process_folder(self, base_path, out_path):
@@ -61,19 +63,59 @@ class Preprocessor():
         Returns X_train, Y_train, X_test, Y_test
         the split ratio is defined by the param 'ratio'
         '''
-        print(">>> Loading...")
-        train_X, test_X = np.empty((0,28)), np.empty((0,28))
-        train_Y, test_Y = np.empty((0,)), np.empty((0,))
+        print(">>> Loading data...")
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
                 src = os.path.join(dirpath, f)
                 print(f'>>> {src}...')
                 data = np.load(src, mmap_mode='r')
                 idx = int(ratio * len(data['X']))
-                train_X = np.vstack((train_X, data['X'][:idx]))
-                train_Y = np.concatenate((train_Y, data['Y'][:idx]))
-                test_X = np.vstack((test_X, data['X'][idx:]))
-                test_Y = np.concatenate((test_Y, data['Y'][idx:]))
+                self.train_X = np.vstack((self.train_X, data['X'][:idx]))
+                self.train_Y = np.concatenate((self.train_Y, data['Y'][:idx]))
+                self.test_X  = np.vstack((self.test_X, data['X'][idx:]))
+                self.test_Y  = np.concatenate((self.test_Y, data['Y'][idx:]))   
+        return train_X, train_Y, test_X, test_Y
+
+
+    def load_processed_data_parallel(self, base_path, ratio=0.8, workers=12):
+        print('>>> Loading data...')
+        data_array, futures = [], []
+        for dirpath, dirnames, files in os.walk(base_path):
+            for f in files:
+                src = os.path.join(dirpath, f)
+                data = np.load(src, mmap_mode='r')
+                data_array.append(data)
+        n_data = self._get_chunks(data_array, workers)
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {executor.submit(self._concatenate_chunk, data):
+                       data for data in n_data}
+            for future in as_completed(futures):
+                train_X, train_Y, test_X, test_Y = future.result()
+                self.train_X = np.vstack((self.train_X, train_X))
+                self.train_Y = np.concatenate((self.train_Y, train_Y))
+                self.test_X  = np.vstack((self.test_X, test_X))
+                self.test_Y  = np.concatenate((self.test_Y, test_Y))
+        return train_X, train_Y, test_X, test_Y
+
+
+    def _get_chunks(self, data, n_chunks):
+        chunks = []
+        n = int(np.ceil(len(data)/n_chunks))
+        for i in range(0, len(data), n):
+            chunk = data[i: n+i]
+            chunks.append(chunk)
+        return chunks
+
+
+    def _concatenate_chunk(self, n_data, ratio=0.8):
+        train_X, test_X = np.empty((0,28)), np.empty((0,28))
+        train_Y, test_Y = np.empty((0,)), np.empty((0,))
+        for data in n_data:
+            idx     = int(ratio * len(data['X']))
+            train_X = np.vstack((train_X, data['X'][:idx]))
+            train_Y = np.concatenate((train_Y, data['Y'][:idx]))
+            test_X  = np.vstack((test_X, data['X'][idx:]))
+            test_Y  = np.concatenate((test_Y, data['Y'][idx:]))       
         return train_X, train_Y, test_X, test_Y
 
     
@@ -84,12 +126,11 @@ class Preprocessor():
         '''
         for k in range(folds):
             print(f'>>> Loading fold {k+1}...')
-            train_X, test_X = np.empty((0,25)), np.empty((0,25))
+            train_X, test_X = np.empty((0,28)), np.empty((0,28))
             train_Y, test_Y = np.empty((0,)), np.empty((0,))
             for dirpath, dirnames, files in os.walk(base_path):
                 for f in files:
                     src = os.path.join(dirpath, f)
-                    print(f'>>> {src}...')
                     data = np.load(src, mmap_mode='r')
                     train_X = np.vstack((train_X, data['X']))
                     train_Y = np.concatenate((train_Y, data['Y']))
@@ -98,8 +139,47 @@ class Preprocessor():
             test_X = np.vstack((test_X, train_X[idx_l:idx_h]))
             test_Y = np.concatenate((test_Y, train_Y[idx_l:idx_h]))
             train_X = np.vstack((train_X[:idx_l], train_X[idx_h:]))
-            train_Y = np.concatenate((train_Y[:idx_l], train_Y[idx_h:]))            
+            train_Y = np.concatenate((train_Y[:idx_l], train_Y[idx_h:]))
+            print(len(train_X), len(train_Y), len(test_X), len(test_Y))           
             yield train_X, train_Y, test_X, test_Y
+
+
+    def load_data_k_fold_parallel(self, base_path, folds=5, workers=12):
+        for k in range(folds):
+            print(f'>>> Loading fold {k+1}...')
+            train_X, test_X = np.empty((0,28)), np.empty((0,28))
+            train_Y, test_Y = np.empty((0,)), np.empty((0,))
+            data_array, futures = [], []
+            for dirpath, dirnames, files in os.walk(base_path):
+                for f in files:
+                    src = os.path.join(dirpath, f)
+                    data = np.load(src, mmap_mode='r')
+                    data_array.append(data)
+            n_data = self._get_chunks(data_array, workers)
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                futures = {executor.submit(self._concatenate_chunk_k_fold, data):
+                           data for data in n_data}
+                for future in as_completed(futures):
+                    tr_X, tr_Y = future.result()
+                    train_X = np.vstack((train_X, tr_X))
+                    train_Y = np.concatenate((train_Y, tr_Y))
+            idx_l = k*int(len(train_X)/folds)
+            idx_h = idx_l + int(len(train_X)/folds)
+            test_X = np.vstack((test_X, train_X[idx_l:idx_h]))
+            test_Y = np.concatenate((test_Y, train_Y[idx_l:idx_h]))
+            train_X = np.vstack((train_X[:idx_l], train_X[idx_h:]))
+            train_Y = np.concatenate((train_Y[:idx_l], train_Y[idx_h:]))
+            print(len(train_X), len(train_Y), len(test_X), len(test_Y))
+            yield train_X, train_Y, test_X, test_Y   
+ 
+
+    def _concatenate_chunk_k_fold(self, n_data):
+        train_X, test_X = np.empty((0,28)), np.empty((0,28))
+        train_Y, test_Y = np.empty((0,)), np.empty((0,))
+        for data in n_data:
+            train_X = np.vstack((train_X, data['X']))
+            train_Y = np.concatenate((train_Y, data['Y']))      
+        return train_X, train_Y
 
 
     def load_file(self, file_path):
@@ -128,7 +208,7 @@ class Preprocessor():
                        an offset of -5 = look-ahead of 5 
         '''
         feat_list, target_list = [],[]
-        for i in range(int(1.5**(stride-1)), len(data)-1):
+        for i in range(2**(stride-1), len(data)-1):
             features = self.extract_features(data, i, stride)
             target = self._convert_label(data.loc[i+target_offset,'Pattern'])
             feat_list.append(features)
@@ -143,7 +223,7 @@ class Preprocessor():
         x_ini = data.loc[i,'X_coord']
         y_ini = data.loc[i,'Y_coord']
         c_ini = data.loc[i,'Confidence']
-        strides = [int(1.5**val) for val in range(1,stride)]
+        strides = [2**val for val in range(stride)]
         speeds, directions, confs = [],[],[c_ini]
         for j in strides:
             pos = i-j
@@ -182,7 +262,8 @@ if __name__=='__main__':
     preprocessor = Preprocessor()
     #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
     #preprocessor.process_folder('data_gazecom', 'cached/gazecom/')
-    preprocessor.process_folder_parallel('data_gazecom/', 'cached/gazecom/', 12)
+    #preprocessor.process_folder_parallel('data_gazecom/', 'cached/gazecom/', 12)
     #preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
     #preprocessor.load_processed_data('cached/')
+    preprocessor.load_processed_data_parallel('cached/gazecom')
 
