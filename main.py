@@ -92,11 +92,11 @@ def main(dataset):
     pproc = preprocessor.Preprocessor(offset=-1)
     if not os.path.exists("cached/" + dataset):
         if dataset == 'hmr':
-            pproc.process_folder_parallel('data_hmr/', 'cached/hmr/')
+            pproc.process_folder_parallel('data_hmr/', 'cached/hmr/', workers=12)
         elif dataset == 'ibdt':
-            pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
+            pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/', workers=12)
         elif dataset == 'gazecom':
-            pproc.process_folder_parallel('data_gazecom/', 'cached/gazecom/')
+            pproc.process_folder_parallel('data_gazecom/', 'cached/gazecom/', workers=12)
    
     #5-fold training
     fold = pproc.load_data_k_fold_parallel('cached/'+dataset)
