@@ -102,6 +102,7 @@ def main(dataset):
     fold = pproc.load_data_k_fold_parallel('cached/'+dataset)
     for fold_i in range(5):
         trX, trY, teX, teY = next(fold)
+        #breaking training data into train/dev sets
         trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
         trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):]
         trX = torch.from_numpy(trX).float()

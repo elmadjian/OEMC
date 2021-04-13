@@ -8,9 +8,11 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_compl
 
 class Preprocessor():
 
-    def __init__(self, stride=9, frequency=200, offset=1):
+    def __init__(self, stride=9, frequency=200, window_length=1, offset=1):
         self.offset = offset
         self.stride = stride
+        self.frequency = frequency
+        self.length = window_length
         self.train_X, self.test_X = np.empty((0,28)), np.empty((0,28))
         self.train_Y, self.test_Y = np.empty((0,)), np.empty((0,))
 
@@ -139,8 +141,7 @@ class Preprocessor():
             test_X = np.vstack((test_X, train_X[idx_l:idx_h]))
             test_Y = np.concatenate((test_Y, train_Y[idx_l:idx_h]))
             train_X = np.vstack((train_X[:idx_l], train_X[idx_h:]))
-            train_Y = np.concatenate((train_Y[:idx_l], train_Y[idx_h:]))
-            print(len(train_X), len(train_Y), len(test_X), len(test_Y))           
+            train_Y = np.concatenate((train_Y[:idx_l], train_Y[idx_h:]))          
             yield train_X, train_Y, test_X, test_Y
 
 
@@ -169,7 +170,6 @@ class Preprocessor():
             test_Y = np.concatenate((test_Y, train_Y[idx_l:idx_h]))
             train_X = np.vstack((train_X[:idx_l], train_X[idx_h:]))
             train_Y = np.concatenate((train_Y[:idx_l], train_Y[idx_h:]))
-            print(len(train_X), len(train_Y), len(test_X), len(test_Y))
             yield train_X, train_Y, test_X, test_Y   
  
 
@@ -208,7 +208,8 @@ class Preprocessor():
                        an offset of -5 = look-ahead of 5 
         '''
         feat_list, target_list = [],[]
-        for i in range(2**(stride-1), len(data)-1):
+        ini = self.frequency * self.length
+        for i in range(ini, len(data)-1):
             features = self.extract_features(data, i, stride)
             target = self._convert_label(data.loc[i+target_offset,'Pattern'])
             feat_list.append(features)
@@ -224,6 +225,8 @@ class Preprocessor():
         y_ini = data.loc[i,'Y_coord']
         c_ini = data.loc[i,'Confidence']
         strides = [2**val for val in range(stride)]
+        fac = (self.frequency * self.length)/strides[-1]
+        strides = [np.ceil(i*fac) for i in strides]
         speeds, directions, confs = [],[],[c_ini]
         for j in strides:
             pos = i-j
@@ -262,8 +265,8 @@ if __name__=='__main__':
     preprocessor = Preprocessor()
     #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
     #preprocessor.process_folder('data_gazecom', 'cached/gazecom/')
-    #preprocessor.process_folder_parallel('data_gazecom/', 'cached/gazecom/', 12)
+    preprocessor.process_folder_parallel('data_hmr/', 'cached/hmr/', 12)
     #preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
     #preprocessor.load_processed_data('cached/')
-    preprocessor.load_processed_data_parallel('cached/gazecom')
+    #preprocessor.load_processed_data_parallel('cached/gazecom')
 
