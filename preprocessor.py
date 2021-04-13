@@ -23,6 +23,7 @@ class Preprocessor():
         dataset. The processed files are stored in an
         optimized format for fast I/O
         '''
+        out_path = self.append_options(out_path)
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
                 src = os.path.join(dirpath, f)
@@ -39,6 +40,7 @@ class Preprocessor():
 
     def process_folder_parallel(self, base_path, out_path, workers):
         srcs, outfiles = [], []
+        out_path = self.append_options(out_path)
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
                 src = os.path.join(dirpath, f)
@@ -181,6 +183,14 @@ class Preprocessor():
             train_Y = np.concatenate((train_Y, data['Y']))      
         return train_X, train_Y
 
+    
+    def append_options(self, outpath):
+        outpath += f'_s{self.stride}'
+        outpath += f'_f{self.frequency}'
+        outpath += f'_w{self.length}'
+        outpath += f'_o{self.offset}'
+        return outpath
+
 
     def load_file(self, file_path):
         '''
@@ -208,7 +218,7 @@ class Preprocessor():
                        an offset of -5 = look-ahead of 5 
         '''
         feat_list, target_list = [],[]
-        ini = self.frequency * self.length
+        ini = int(np.ceil(self.frequency * self.length))
         for i in range(ini, len(data)-1):
             features = self.extract_features(data, i, stride)
             target = self._convert_label(data.loc[i+target_offset,'Pattern'])
@@ -226,7 +236,7 @@ class Preprocessor():
         c_ini = data.loc[i,'Confidence']
         strides = [2**val for val in range(stride)]
         fac = (self.frequency * self.length)/strides[-1]
-        strides = [np.ceil(i*fac) for i in strides]
+        strides = [int(np.ceil(i*fac)) for i in strides]
         speeds, directions, confs = [],[],[c_ini]
         for j in strides:
             pos = i-j
@@ -262,10 +272,10 @@ class Preprocessor():
 
 
 if __name__=='__main__':
-    preprocessor = Preprocessor()
+    preprocessor = Preprocessor(window_length=1.28)
     #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
     #preprocessor.process_folder('data_gazecom', 'cached/gazecom/')
-    preprocessor.process_folder_parallel('data_hmr/', 'cached/hmr/', 12)
+    preprocessor.process_folder_parallel('data_hmr', 'cached/hmr', 12)
     #preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
     #preprocessor.load_processed_data('cached/')
     #preprocessor.load_processed_data_parallel('cached/gazecom')
