@@ -162,6 +162,6 @@ def main(dataset):
 
 
 if __name__=="__main__":
-    #main('hmr')
+    main('hmr')
     #main('ibdt')
-    main('gazecom')
+    #main('gazecom')
