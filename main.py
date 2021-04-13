@@ -94,17 +94,17 @@ def set_randomness(seed):
 def main(dataset):
     set_randomness(0)
     print("Loading data...")
-    pproc = preprocessor.Preprocessor(offset=-1)
-    if not os.path.exists("cached/" + dataset):
+    pproc = preprocessor.Preprocessor(window_length=1.5, offset=1)
+    if not os.path.exists("cached/" + pproc.append_options(dataset)):
         if dataset == 'hmr':
-            pproc.process_folder_parallel('data_hmr/', 'cached/hmr/', workers=12)
+            pproc.process_folder_parallel('data_hmr', 'cached/hmr', workers=12)
         elif dataset == 'ibdt':
-            pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/', workers=12)
+            pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed', 'cached/ibdt', workers=12)
         elif dataset == 'gazecom':
-            pproc.process_folder_parallel('data_gazecom/', 'cached/gazecom/', workers=12)
+            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom', workers=12)
    
     #5-fold training
-    fold = pproc.load_data_k_fold_parallel('cached/'+dataset)
+    fold = pproc.load_data_k_fold_parallel('cached/'+pproc.append_options(dataset))
     for fold_i in range(5):
         trX, trY, teX, teY = next(fold)
         #breaking training data into train/dev sets
