@@ -4,10 +4,9 @@ import torch.nn.functional as F
 import preprocessor
 import os
 import numpy as np
+import random
 
-#TODO: modificar o preprocessor pra dar suporte a entradas de diferentes frequências
 #TODO: implementar um "classificador online" para rodar em tempo real
-
 
 def train(model, optimizer, x_val, y_val):
     model.train()
@@ -86,8 +85,14 @@ def print_scores(total_pred, total_label, test_loss):
     ))
 
 
+def set_randomness(seed):
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+
+
 def main(dataset):
-    torch.manual_seed(0)
+    set_randomness(0)
     print("Loading data...")
     pproc = preprocessor.Preprocessor(offset=-1)
     if not os.path.exists("cached/" + dataset):
