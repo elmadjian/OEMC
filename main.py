@@ -143,15 +143,15 @@ def main(dataset, folds=5):
                 start, end = k * batch_size, (k+1) * batch_size
                 cost += train(model, optimizer, trX[start:end,:], trY[start:end])
                 steps += seq_length
-                if k > 0 and k % (num_batches//5) == 0:
-                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tSteps: {}'.format(
+                if k > 0 and k % (num_batches//10) == 0:
+                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tSteps: {}'.format(
                         epoch, start, train_size,
                         100 * k / num_batches, cost/batch_size, steps 
                     ), end='\r')
                     cost = 0
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, trX_val, trY_val)
             print_scores(preds, labels, t_loss)
-            if epoch % 8 == 0:
+            if epoch % 6 == 0:
                 lr /= 5
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
@@ -166,7 +166,7 @@ def main(dataset, folds=5):
         if not os.path.exists('models'):
             os.makedirs('models')
         torch.save(model.state_dict(), 'models/' + model_param + '.pt')
-        scorer = scorer.Scorer('outputs/', model_param[:-1], folds)
+    scorer = scorer.Scorer('outputs/', model_param[:-1], folds)
 
 
 
