@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 class Scorer():
     
@@ -20,6 +21,14 @@ class Scorer():
             self._count_event(preds, gt)
         self._show_results_sample()
         self._show_results_event()
+
+
+    def score_csv(self, output, ground_truth):
+        out = pd.read_csv(output)
+        gt  = pd.read_csv(ground_truth)
+        for i, _ in out.iterrows():
+            print(i, out.loc[i])
+            input()
 
 
     def _show_results_sample(self):
