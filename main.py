@@ -5,6 +5,7 @@ import preprocessor
 import os
 import numpy as np
 import random
+import scorer
 
 #TODO: implementar um "classificador online" para rodar em tempo real
 
@@ -91,10 +92,10 @@ def set_randomness(seed):
     np.random.seed(seed)
 
 
-def main(dataset):
+def main(dataset, folds=5):
     set_randomness(0)
     print("Loading data...")
-    pproc = preprocessor.Preprocessor(window_length=1.5, offset=1)
+    pproc = preprocessor.Preprocessor(window_length=1.28, offset=1, stride=9)
     if not os.path.exists("cached/" + pproc.append_options(dataset)):
         if dataset == 'hmr':
             pproc.process_folder_parallel('data_hmr', 'cached/hmr', workers=12)
@@ -104,8 +105,8 @@ def main(dataset):
             pproc.process_folder_parallel('data_gazecom', 'cached/gazecom', workers=12)
    
     #5-fold training
-    fold = pproc.load_data_k_fold_parallel('cached/'+pproc.append_options(dataset))
-    for fold_i in range(5):
+    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset))
+    for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
         #breaking training data into train/dev sets
         trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
@@ -165,6 +166,8 @@ def main(dataset):
         if not os.path.exists('models'):
             os.makedirs('models')
         torch.save(model.state_dict(), 'models/' + model_param + '.pt')
+        scorer = scorer.Scorer('outputs/', model_param[:-1], folds)
+
 
 
 if __name__=="__main__":

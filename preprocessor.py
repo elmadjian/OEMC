@@ -13,7 +13,8 @@ class Preprocessor():
         self.stride = stride
         self.frequency = frequency
         self.length = window_length
-        self.train_X, self.test_X = np.empty((0,28)), np.empty((0,28))
+        self.f_len = stride*3
+        self.train_X, self.test_X = np.empty((0,self.f_len)), np.empty((0,self.f_len))
         self.train_Y, self.test_Y = np.empty((0,)), np.empty((0,))
 
 
@@ -71,7 +72,7 @@ class Preprocessor():
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
                 src = os.path.join(dirpath, f)
-                print(f'>>> {src}...')
+                #print(f'>>> {src}...')
                 data = np.load(src, mmap_mode='r')
                 idx = int(ratio * len(data['X']))
                 self.train_X = np.vstack((self.train_X, data['X'][:idx]))
@@ -112,7 +113,7 @@ class Preprocessor():
 
 
     def _concatenate_chunk(self, n_data, ratio=0.8):
-        train_X, test_X = np.empty((0,28)), np.empty((0,28))
+        train_X, test_X = np.empty((0,self.f_len)), np.empty((0,self.f_len))
         train_Y, test_Y = np.empty((0,)), np.empty((0,))
         for data in n_data:
             idx     = int(ratio * len(data['X']))
@@ -130,7 +131,7 @@ class Preprocessor():
         '''
         for k in range(folds):
             print(f'>>> Loading fold {k+1}...')
-            train_X, test_X = np.empty((0,28)), np.empty((0,28))
+            train_X, test_X = np.empty((0,self.f_len)), np.empty((0,self.f_len))
             train_Y, test_Y = np.empty((0,)), np.empty((0,))
             for dirpath, dirnames, files in os.walk(base_path):
                 for f in files:
@@ -150,7 +151,7 @@ class Preprocessor():
     def load_data_k_fold_parallel(self, base_path, folds=5, workers=12):
         for k in range(folds):
             print(f'>>> Loading fold {k+1}...')
-            train_X, test_X = np.empty((0,28)), np.empty((0,28))
+            train_X, test_X = np.empty((0,self.f_len)), np.empty((0,self.f_len))
             train_Y, test_Y = np.empty((0,)), np.empty((0,))
             data_array, futures = [], []
             for dirpath, dirnames, files in os.walk(base_path):
@@ -176,7 +177,7 @@ class Preprocessor():
  
 
     def _concatenate_chunk_k_fold(self, n_data):
-        train_X, test_X = np.empty((0,28)), np.empty((0,28))
+        train_X, test_X = np.empty((0,self.f_len)), np.empty((0,self.f_len))
         train_Y, test_Y = np.empty((0,)), np.empty((0,))
         for data in n_data:
             train_X = np.vstack((train_X, data['X']))
@@ -237,7 +238,7 @@ class Preprocessor():
         strides = [2**val for val in range(stride)]
         fac = (self.frequency * self.length)/strides[-1]
         strides = [int(np.ceil(i*fac)) for i in strides]
-        speeds, directions, confs = [],[],[c_ini]
+        speeds, directions, confs = [],[],[]
         for j in strides:
             pos = i-j
             x_end = data.loc[pos, 'X_coord']
