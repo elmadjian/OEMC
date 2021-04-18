@@ -40,3 +40,35 @@
 * F-score em nível amostral para todos os padrões (Fixações, Sacadas, Smooth Pursuits e Blinks)
 * F-score em nível de evento com IoU > 0.5 para todos os padrões
 * mesmas métricas para dados com subsampling 
+
+
+
+-------------------
+Da forma como o Rodrigo rodou, estamos descartando 29.5% dos dados do GazeCom.
+Para alguns usuários, a situação é mais patológica.
+RRP: descarte de 39% 
+HHB: descarte de 45%
+SSK: descarte de 78% dos dados
+
+Exemplo de distorção da média:
+-> score individual pra cada vídeo de RRP:
+   FIX F1: 0.9033
+   SAC F1: 0.6061
+   SP  F1: 0.3383
+
+-> score individual ponderando a quantidade de amostras RRP:
+   FIX F1: 0.9055
+   SAC F1: 0.5948
+   SP  F1: 0.4296
+
+Média total *ponderando* a quantidade de amostras:
+Fixation       -> Precision: 0.8015, Recall: 0.9424, F-score: 0.8662
+Saccade        -> Precision: 0.9761, Recall: 0.3390, F-score: 0.5032
+Smooth Pursuit -> Precision: 0.5316, Recall: 0.3476, F-score: 0.4204
+
+Média total sem ponderar:
+    FIX F1: 0.8625
+    SAC F1: 0.4953
+    SP  F1: 0.4182
+
+
