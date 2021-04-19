@@ -12,7 +12,7 @@ class Scorer():
         self.folds = folds
         self.conf_matrix = [{'tp':0,'tn':0,'fp':0,'fn':0} for i in range(4)]
         self.event_matrix = [{'tp':0, 'tn':0, 'fp':0, 'fn':0} for i in range(4)]
-        self.individual = {}
+        #self.individual = {}
 
 
     def _reset_scores(self):
@@ -32,15 +32,15 @@ class Scorer():
         self._show_results_event()
 
     
-    def score_gazecom(self, base_path):
+    def score_ibdt(self, base_path, dataset):
         pattern = os.path.join(base_path, '**/*.csv')
         files = glob.glob(pattern, recursive=True)
         preds = [name for name in files if 'classification.csv' in name]
         gts   = [name for name in files if 'reviewed.csv' in name]
-        users = self._index_gazecom_users(preds, gts)
+        users = self._index_users(preds, gts, dataset)
         for user in users.keys():
-            self.individual[user] = {'FIX':0, 'SAC':0, 'SP':0}
-            self._get_score_user(users[user])
+            #self.individual[user] = {'FIX':0, 'SAC':0, 'SP':0}
+            self._get_score_user(users[user], user)
             #print(self.individual[user])
         # fix, sac, sp = 0,0,0
         # user_tot = len(self.individual.keys())
@@ -55,22 +55,32 @@ class Scorer():
         
         
 
-    def _get_score_user(self, user):
+    def _get_score_user(self, user, key):
         for video in user.keys():
             pred = user[video]['pred']
             gt   = user[video]['gt']
             self.score_csv(pred, gt)
             #self._f_score_calc_individual(self.conf_matrix, key)
+            #self._reset_scores()
+        # user_tot = len(user.keys())
+        # self.individual[key]['FIX'] /= user_tot
+        # self.individual[key]['SAC'] /= user_tot
+        # self.individual[key]['SP'] /= user_tot
         #self._reset_scores()
+        
 
 
 
-    def _index_gazecom_users(self, preds, gts):
+    def _index_users(self, preds, gts, dataset):
         users = {}
         for pred in preds:
             for gt in gts:
-                p_vid, p_id = re.findall('\/(\w+)\/(\w+)\/\w+.csv', pred)[0]
-                g_vid, g_id = re.findall('\/(\w+)\/(\w+)\/\w+.csv', gt)[0]
+                if dataset == 'gazecom':
+                    p_vid, p_id = re.findall('\/(\w+)\/(\w+)\/\w+.csv', pred)[0]
+                    g_vid, g_id = re.findall('\/(\w+)\/(\w+)\/\w+.csv', gt)[0]
+                elif dataset == 'hmr':
+                    p_id, p_vid = re.findall('(user_\d+)\/(\d)\/\w+.csv', pred)[0]
+                    g_id, g_vid = re.findall('(user_\d+)\/(\d)\/\w+.csv', gt)[0]
                 if p_id not in users.keys():
                     users[p_id] = {}
                 if p_vid == g_vid and p_id == g_id:
@@ -116,10 +126,12 @@ class Scorer():
                 name = 'SAC'
             elif patt == 2:
                 name = 'SP'
+            else:
+                return
             fscore = 0
             if precision * recall != 0:
                 fscore = 2*(precision * recall) / (precision + recall)
-            self.individual[user][name] = fscore
+            self.individual[user][name] += fscore
 
 
     def _f_score_calc(self, matrix):
@@ -200,4 +212,5 @@ if __name__=="__main__":
     #scorer = Scorer('outputs/', 'tcn_model_BS-2048_LAYERS-5_EPOCHS-3_FOLD-', 5)
     #scorer.score()
     scorer = Scorer('', '', 1)
-    scorer.score_gazecom('gaze-com-classification')
+    #scorer.score_ibdt('gaze-com-classification')
+    scorer.score_ibdt('hmr_classification', 'hmr')
