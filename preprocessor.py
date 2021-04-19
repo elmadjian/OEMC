@@ -244,7 +244,7 @@ class Preprocessor():
             x_end = data.loc[pos, 'X_coord']
             y_end = data.loc[pos, 'Y_coord']
             p1, p2 = (x_ini,y_ini), (x_end,y_end)
-            speed, displ, direc = self.calculate_features(p1,p2,j)
+            speed, direc = self.calculate_features(p1,p2,j)
             speeds.append(speed)
             directions.append(direc)
             confs.append(data.loc[pos, 'Confidence'])

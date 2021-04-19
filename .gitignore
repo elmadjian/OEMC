@@ -1,3 +1,4 @@
+gaze-com-classification/
 cached/
 data/
 etra2016-ibdt*
@@ -13,3 +14,4 @@ __pycache__
 *.zip
 *.avi
 results.md
+metricas.md
