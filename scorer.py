@@ -197,7 +197,7 @@ class Scorer():
 
 
 if __name__=="__main__":
-    #scorer = Scorer('outputs/', 'tcn_model_BS-2048_LAYERS-5_EPOCHS-3_FOLD-', 5)
-    #scorer.score()
-    scorer = Scorer('', '', 1)
-    scorer.score_gazecom('gaze-com-classification')
+    scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_LAYERS-4_EPOCHS-25_FOLD-', 10)
+    scorer.score()
+    #scorer = Scorer('', '', 1)
+    #scorer.score_gazecom('gaze-com-classification')
