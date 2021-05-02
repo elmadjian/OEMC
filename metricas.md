@@ -44,6 +44,7 @@
 
 
 -------------------
+Gazecom:
 Da forma como o Rodrigo rodou, estamos descartando 29.5% dos dados do GazeCom.
 Para alguns usuários, a situação é mais patológica.
 RRP: descarte de 39% 
@@ -62,13 +63,20 @@ Exemplo de distorção da média:
    SP  F1: 0.4296
 
 Média total *ponderando* a quantidade de amostras:
-Fixation       -> Precision: 0.8015, Recall: 0.9424, F-score: 0.8662
-Saccade        -> Precision: 0.9761, Recall: 0.3390, F-score: 0.5032
-Smooth Pursuit -> Precision: 0.5316, Recall: 0.3476, F-score: 0.4204
+    FIX F1: 0.8662
+    SAC F1: 0.5032
+    SP  F1: 0.4204
 
 Média total sem ponderar:
-    FIX F1: 0.8625
-    SAC F1: 0.4953
-    SP  F1: 0.4182
+    FIX F1: 0.8582
+    SAC F1: 0.4700
+    SP  F1: 0.3528
+
+
+HMR:
+    FIX F1: 0.8255
+    SAC F1: 0.5626
+    SP  F1: 0.4996
+
 
 

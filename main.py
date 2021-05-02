@@ -130,6 +130,7 @@ def main(dataset, folds=5):
         channel_sizes = [25]*5
         steps = 0
         lr = 0.01
+        print(trX.shape)
         
         model = TCN(1, n_classes, channel_sizes, kernel_size=5, dropout=0.25)
         model.cuda()
