@@ -92,10 +92,10 @@ def set_randomness(seed):
     np.random.seed(seed)
 
 
-def main(dataset, folds=5):
+def main(dataset, folds=10):
     set_randomness(0)
     print("Loading data...")
-    pproc = preprocessor.Preprocessor(window_length=1.28, offset=1, stride=9)
+    pproc = preprocessor.Preprocessor(window_length=1.28, offset=0, stride=9)
     if not os.path.exists("cached/" + pproc.append_options(dataset)):
         if dataset == 'hmr':
             pproc.process_folder_parallel('data_hmr', 'cached/hmr', workers=12)
@@ -105,7 +105,8 @@ def main(dataset, folds=5):
             pproc.process_folder_parallel('data_gazecom', 'cached/gazecom', workers=12)
    
     #5-fold training
-    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset))
+    #fold = pproc.load_data_k_fold_parallel('cached/'+pproc.append_options(dataset), workers=8)
+    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset), folds=folds)
     for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
         #breaking training data into train/dev sets
@@ -127,7 +128,7 @@ def main(dataset, folds=5):
         seq_length = trX.shape[1]
         batch_size = 2048
         epochs     = 25
-        channel_sizes = [25]*5
+        channel_sizes = [30]*4
         steps = 0
         lr = 0.01
         print(trX.shape)
@@ -167,7 +168,9 @@ def main(dataset, folds=5):
         if not os.path.exists('models'):
             os.makedirs('models')
         torch.save(model.state_dict(), 'models/' + model_param + '.pt')
-    scorer = scorer.Scorer('outputs/', model_param[:-1], folds)
+    model_name = model_param[:-1] if folds < 9 else model_param[:-2]
+    scorer_final = scorer.Scorer('outputs/', model_name, folds=folds)
+    scorer_final.score()
 
 
 
