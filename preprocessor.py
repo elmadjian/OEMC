@@ -18,7 +18,7 @@ class Preprocessor():
         self.train_Y, self.test_Y = np.empty((0,)), np.empty((0,))
 
 
-    def process_folder(self, base_path, out_path):
+    def process_folder(self, base_path, out_path, old=False):
         '''
         Extract features from a folder containing the
         dataset. The processed files are stored in an
@@ -35,12 +35,15 @@ class Preprocessor():
                 outfile = os.path.join(out_path, patt[0], f[:-4])
                 print(f'>>> extracting features from {src}...')
                 data = self.load_file(src)
-                X,Y = self.process_data(data, self.stride, self.offset)
+                if old:
+                    X,Y = self.process_data_old(data)
+                else:
+                    X,Y = self.process_data(data, self.stride, self.offset)
                 self.save_processed_file(X, Y, outfile)
 
 
-    def process_folder_parallel(self, base_path, out_path, workers):
-        srcs, outfiles = [], []
+    def process_folder_parallel(self, base_path, out_path, workers, old=False):
+        srcs, outfiles, olds = [], [], []
         out_path = self.append_options(out_path)
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
@@ -52,14 +55,18 @@ class Preprocessor():
                     os.makedirs(outpath)
                 outfile = os.path.join(out_path, patt[0], f[:-4])
                 outfiles.append(outfile)
+                olds.append(old)
         with ProcessPoolExecutor(max_workers=workers) as executor:
-            executor.map(self._process_one, srcs, outfiles, timeout=90)
+            executor.map(self._process_one, srcs, outfiles, olds, timeout=90)
 
     
-    def _process_one(self, src, outfile):
+    def _process_one(self, src, outfile, old):
         print(f'>>> extracting features from {src}...')
         data = self.load_file(src)
-        X,Y = self.process_data(data, self.stride, self.offset)
+        if old:
+            X,Y = self.process_data_old(data)
+        else:
+            X,Y = self.process_data(data, self.stride, self.offset)
         self.save_processed_file(X, Y, outfile)
 
 
@@ -69,17 +76,28 @@ class Preprocessor():
         the split ratio is defined by the param 'ratio'
         '''
         print(">>> Loading data...")
+        base_path = self.append_options(base_path)
+        X_base, Y_base = None, None
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
                 src = os.path.join(dirpath, f)
-                #print(f'>>> {src}...')
                 data = np.load(src, mmap_mode='r')
-                idx = int(ratio * len(data['X']))
-                self.train_X = np.vstack((self.train_X, data['X'][:idx]))
-                self.train_Y = np.concatenate((self.train_Y, data['Y'][:idx]))
-                self.test_X  = np.vstack((self.test_X, data['X'][idx:]))
-                self.test_Y  = np.concatenate((self.test_Y, data['Y'][idx:]))   
+                X, Y = data['X'], data['Y']
+                X_base, Y_base = self._stack_data((X_base,Y_base), (X,Y))
+        idx = int(ratio * X_base.shape[0])
+        train_X, test_X = X_base[:idx], X_base[idx:]
+        train_Y, test_Y = Y_base[:idx], Y_base[idx:]
         return train_X, train_Y, test_X, test_Y
+
+
+    def _stack_data(self, base_data, new_data):
+        X_base, Y_base = base_data
+        X_new, Y_new = new_data
+        if X_base is None and Y_base is None:
+            return X_new, Y_new
+        X_base = np.vstack((X_base, X_new))
+        Y_base = np.concatenate((Y_base, Y_new))
+        return X_base, Y_base
 
 
     def load_processed_data_parallel(self, base_path, ratio=0.8, workers=12):
@@ -131,20 +149,19 @@ class Preprocessor():
         '''
         for k in range(folds):
             print(f'>>> Loading fold {k+1}...')
-            train_X, test_X = np.empty((0,self.f_len)), np.empty((0,self.f_len))
-            train_Y, test_Y = np.empty((0,)), np.empty((0,))
+            X_base, Y_base = None, None
             for dirpath, dirnames, files in os.walk(base_path):
                 for f in files:
                     src = os.path.join(dirpath, f)
                     data = np.load(src, mmap_mode='r')
-                    train_X = np.vstack((train_X, data['X']))
-                    train_Y = np.concatenate((train_Y, data['Y']))
-            idx_l = k*int(len(train_X)/folds)
-            idx_h = idx_l + int(len(train_X)/folds)
-            test_X = np.vstack((test_X, train_X[idx_l:idx_h]))
-            test_Y = np.concatenate((test_Y, train_Y[idx_l:idx_h]))
-            train_X = np.vstack((train_X[:idx_l], train_X[idx_h:]))
-            train_Y = np.concatenate((train_Y[:idx_l], train_Y[idx_h:]))          
+                    X, Y = data['X'], data['Y']
+                    X_base, Y_base = self._stack_data((X_base,Y_base), (X,Y))
+            idx_l = k*int(X_base.shape[0]/folds)
+            idx_h = idx_l + int(X_base.shape[0]/folds)
+            test_X = X_base[idx_l:idx_h]
+            test_Y = Y_base[idx_l:idx_h]
+            train_X = np.vstack((X_base[:idx_l], X_base[idx_h:]))
+            train_Y = np.concatenate((Y_base[:idx_l], Y_base[idx_h:]))          
             yield train_X, train_Y, test_X, test_Y
 
 
@@ -220,12 +237,73 @@ class Preprocessor():
         '''
         feat_list, target_list = [],[]
         ini = int(np.ceil(self.frequency * self.length))
-        for i in range(ini, len(data)-1):
+        for i in range(ini, len(data)):
             features = self.extract_features(data, i, stride)
             target = self._convert_label(data.loc[i+target_offset,'Pattern'])
             feat_list.append(features)
             target_list.append(target)
         return np.array(feat_list), np.array(target_list)
+
+
+    def process_data_old(self, data):
+        '''
+        '''
+        windows = [1, 2, 4, 8, 16, 32, 64, 128]
+        latency = 1000/self.frequency #in ms
+        x = data['X_coord'].to_numpy()
+        y = data['Y_coord'].to_numpy()
+        c = data['Confidence'].to_numpy()
+        p = data['Pattern'].to_numpy()
+        X,Y = self.extract_features_old(x,y,c,p, windows, latency)
+        return X, Y
+        #return self.create_batches_old(X, Y)
+
+
+    def extract_features_old(self, x, y, conf, targets, windows, latency):
+        tr_tensor  = np.zeros((len(x), 2*len(windows)))
+        tgt_tensor = np.zeros(len(targets),)
+        for i in range(len(x)):
+            for j in range(len(windows)):
+                w = windows[j]
+                step = np.math.ceil(w/2)
+                start_pos, end_pos = self._get_start_end(i,step,w,x)
+                if start_pos == end_pos:
+                    continue
+                diff_x = x[end_pos] - x[start_pos]
+                diff_y = y[end_pos] - y[start_pos]
+                ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
+                time   = ((end_pos - start_pos)*latency)/1000
+                tr_tensor[i][j] = ampl/time
+                tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
+            tgt_tensor[i] = self._convert_label(targets[i])
+        return tr_tensor, tgt_tensor
+
+    
+    def create_batches(self, X, Y, start, end):
+        final_batch_X = []
+        win_span = int(np.ceil(self.frequency * self.length))
+        final_batch_Y = Y[win_span-1+start:-1+end]
+        for i in range(start, end-win_span):
+            batch_X = X[i:i+win_span,:]
+            final_batch_X.append(batch_X)
+        final_batch_X = np.array(final_batch_X)
+        batch_X = torch.from_numpy(final_batch_X).float()
+        batch_Y = torch.from_numpy(final_batch_Y).long()
+        return batch_X, batch_Y
+
+
+    def _get_start_end(self, i, step, win_width, data):
+        if step == win_width:
+            start_pos = i - step
+            end_pos = i
+        else:
+            start_pos = i - step
+            end_pos = i + step
+        if start_pos < 0:
+            start_pos = i
+        if end_pos >= len(data):
+            end_pos = i
+        return start_pos, end_pos
 
 
     def extract_features(self, data, i, stride):
@@ -276,8 +354,9 @@ if __name__=='__main__':
     preprocessor = Preprocessor(window_length=1.28)
     #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
     #preprocessor.process_folder('data_gazecom', 'cached/gazecom/')
-    preprocessor.process_folder_parallel('data_hmr', 'cached/hmr', 12)
+    #preprocessor.process_folder_parallel('data_hmr', 'cached/hmr', 12)
     #preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
-    #preprocessor.load_processed_data('cached/')
     #preprocessor.load_processed_data_parallel('cached/gazecom')
+    #preprocessor.process_folder('data_hmr/', 'cached/hmr_old', old=True)
+    preprocessor.load_processed_data('cached/hmr')
 

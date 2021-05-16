@@ -6,6 +6,7 @@ import os
 import numpy as np
 import random
 import scorer
+import sys
 
 #TODO: implementar um "classificador online" para rodar em tempo real
 
@@ -69,7 +70,6 @@ def predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc):
     for k in range(num_test_batches):
         start, end = k*batch_size, (k+1)*batch_size
         X,Y = pproc.create_batches(trX_val, trY_val, start, end)
-        #preds, labels, loss = test(model, trX_val[start:end,:], trY_val[start:end])
         preds, labels, loss = test(model, X, Y)
         test_loss += loss
         total_pred = torch.cat([total_pred, preds], dim=0)
@@ -97,18 +97,16 @@ def set_randomness(seed):
 def main(dataset, folds=10):
     set_randomness(0)
     print("Loading data...")
-    pproc = preprocessor.Preprocessor(window_length=1, offset=0, stride=8)
-    if not os.path.exists("cached/" + pproc.append_options(dataset)):
+    pproc = preprocessor.Preprocessor(window_length=1, offset=0, stride=9)
+    if not os.path.exists("cached/" + pproc.append_options(dataset + "_old")):
         if dataset == 'hmr':
-            pproc.process_folder_parallel('data_hmr', 'cached/hmr', workers=12)
-        elif dataset == 'ibdt':
-            pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed', 'cached/ibdt', workers=12)
+            pproc.process_folder_parallel('data_hmr', 'cached/hmr_old', workers=12, old=True)
         elif dataset == 'gazecom':
-            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom', workers=12)
+            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom_old', workers=12, old=True)
    
     #5-fold training
     #fold = pproc.load_data_k_fold_parallel('cached/'+pproc.append_options(dataset), workers=8)
-    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset), folds=folds)
+    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset + "_old"), folds=folds)
     for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
         #breaking training data into train/dev sets
@@ -118,13 +116,14 @@ def main(dataset, folds=10):
         # trY = torch.from_numpy(trY).long()
         # teX = torch.from_numpy(teX).float()
         # teY = torch.from_numpy(teY).long()
-        # trX = trX.reshape(trX.shape[0], 1, trX.shape[1])
-        # teX = teX.reshape(teX.shape[0], 1, teX.shape[1])
-        # trX_val = torch.from_numpy(trX_val).float()
-        # trY_val = torch.from_numpy(trY_val).long()
-        # trX_val = trX_val.reshape(trX_val.shape[0], 1, trX_val.shape[1])    
+        #trX = trX.reshape(trX.shape[0], 1, trX.shape[1])
+        #teX = teX.reshape(teX.shape[0], 1, teX.shape[1])
+        #trX_val = torch.from_numpy(trX_val).float()
+        #trY_val = torch.from_numpy(trY_val).long()
+        #trX_val = trX_val.reshape(trX_val.shape[0], 1, trX_val.shape[1])    
+        #trX_val, trY_val = pproc.create_batches(trX_val, trY_val, 0, len(trY_val))
+        
 
-        #input: (samples, timesteps, features)
         train_size = len(trY)
         test_size  = len(trY_val)
         n_classes  = 4
@@ -146,7 +145,6 @@ def main(dataset, folds=10):
             for k in range(num_batches):
                 start, end = k * batch_size, (k+1) * batch_size
                 trainX, trainY = pproc.create_batches(trX, trY, start, end)
-                #cost += train(model, optimizer, trX[start:end,:], trY[start:end])
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
                 if k > 0 and k % (num_batches//10) == 0:
