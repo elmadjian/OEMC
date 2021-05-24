@@ -1,4 +1,5 @@
 from tcn import TCN
+from cnn_blstm import CNN_BLSTM
 import torch
 import torch.nn.functional as F
 import preprocessor
@@ -6,6 +7,7 @@ import os
 import numpy as np
 import random
 import scorer
+import argparse
 
 #TODO: implementar um "classificador online" para rodar em tempo real
 
@@ -69,7 +71,6 @@ def predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc):
     for k in range(num_test_batches):
         start, end = k*batch_size, (k+1)*batch_size
         X,Y = pproc.create_batches(trX_val, trY_val, start, end)
-        #preds, labels, loss = test(model, trX_val[start:end,:], trY_val[start:end])
         preds, labels, loss = test(model, X, Y)
         test_loss += loss
         total_pred = torch.cat([total_pred, preds], dim=0)
@@ -94,49 +95,53 @@ def set_randomness(seed):
     np.random.seed(seed)
 
 
-def main(dataset, folds=10):
+def get_model(args, layers, features):
+    if args.model == 'tcn':
+        model = TCN(args.timesteps, 4, layers,
+                    kernel_size=args.kernel_size, dropout=args.dropout)
+        model.cuda()
+        return model
+    if args.model == 'cnn_blstm':
+        model = CNN_BLSTM(args.timesteps, 4, args.kernel_size, args.dropout,
+                          features, blstm_layers=2)
+        model.cuda()
+        return model
+
+
+def main(args, folds=10):
     set_randomness(0)
     print("Loading data...")
+    dataset = args.dataset
+    proc_style = '_' + args.preprocessing
     pproc = preprocessor.Preprocessor(window_length=1, offset=0, stride=8)
-    if not os.path.exists("cached/" + pproc.append_options(dataset)):
+    if not os.path.exists("cached/" + pproc.append_options(dataset + proc_style)):
         if dataset == 'hmr':
-            pproc.process_folder_parallel('data_hmr', 'cached/hmr', workers=12)
+            pproc.process_folder_parallel('data_hmr', 'cached/hmr' + proc_style, workers=12)
         elif dataset == 'ibdt':
             pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed', 'cached/ibdt', workers=12)
         elif dataset == 'gazecom':
-            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom', workers=12)
+            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom' + proc_style, workers=12)
    
-    #5-fold training
     #fold = pproc.load_data_k_fold_parallel('cached/'+pproc.append_options(dataset), workers=8)
-    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset), folds=folds)
+    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset + proc_style), folds=folds)
     for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
         #breaking training data into train/dev sets
         trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
-        trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):]
-        # trX = torch.from_numpy(trX).float()
-        # trY = torch.from_numpy(trY).long()
-        # teX = torch.from_numpy(teX).float()
-        # teY = torch.from_numpy(teY).long()
-        # trX = trX.reshape(trX.shape[0], 1, trX.shape[1])
-        # teX = teX.reshape(teX.shape[0], 1, teX.shape[1])
-        # trX_val = torch.from_numpy(trX_val).float()
-        # trY_val = torch.from_numpy(trY_val).long()
-        # trX_val = trX_val.reshape(trX_val.shape[0], 1, trX_val.shape[1])    
+        trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):] 
 
-        #input: (samples, timesteps, features)
         train_size = len(trY)
         test_size  = len(trY_val)
         n_classes  = 4
-        batch_size = 2048
-        epochs     = 25
+        features   = trX.shape[1]
+        batch_size = args.batch_size
+        epochs     = args.epochs
         channel_sizes = [30]*4
-        timesteps  = 200
+        timesteps  = args.timesteps
         steps = 0
         lr = 0.01
         
-        model = TCN(timesteps, n_classes, channel_sizes, kernel_size=5, dropout=0.25)
-        model.cuda()
+        model = get_model(args, channel_sizes, features)
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         num_test_batches = test_size//batch_size
 
@@ -145,8 +150,7 @@ def main(dataset, folds=10):
             num_batches = train_size//batch_size
             for k in range(num_batches):
                 start, end = k * batch_size, (k+1) * batch_size
-                trainX, trainY = pproc.create_batches(trX, trY, start, end)
-                #cost += train(model, optimizer, trX[start:end,:], trY[start:end])
+                trainX, trainY = pproc.create_batches(trX, trY, start, end) 
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
                 if k > 0 and k % (num_batches//10) == 0:
@@ -179,6 +183,35 @@ def main(dataset, folds=10):
 
 
 if __name__=="__main__":
-    main('hmr')
-    #main('ibdt')
-    #main('gazecom')
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('-d',
+                           '--dataset',
+                           required=True,
+                           choices=['hmr', 'gazecom'])
+    argparser.add_argument('-m',
+                           '--model',
+                            required=True,
+                            choices=['tcn', 'cnn_blstm'])
+    argparser.add_argument('-b',
+                           '--batch_size',
+                           required=False,
+                           default=2048)
+    argparser.add_argument('--dropout',
+                            required=False,
+                            default=0.25)
+    argparser.add_argument('--epochs',
+                            required=False,
+                            default=25)
+    argparser.add_argument('--kernel_size',
+                            required=False,
+                            default=5)
+    argparser.add_argument('-p',
+                           '--preprocessing',
+                           required=False,
+                           default='old')
+    argparser.add_argument('-t',
+                           '--timesteps',
+                           required=True,
+                           type=int)
+    args = argparser.parse_args()
+    main(args)
