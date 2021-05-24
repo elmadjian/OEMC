@@ -113,7 +113,7 @@ def main(args, folds=10):
     print("Loading data...")
     dataset = args.dataset
     proc_style = '_' + args.preprocessing
-    pproc = preprocessor.Preprocessor(window_length=1, offset=0, stride=8)
+    pproc = preprocessor.Preprocessor(window_length=1, offset=0, stride=9, frequency=args.timesteps)
     if not os.path.exists("cached/" + pproc.append_options(dataset + proc_style)):
         if dataset == 'hmr':
             pproc.process_folder_parallel('data_hmr', 'cached/hmr' + proc_style, workers=12)

@@ -25,8 +25,9 @@ class CNN_BLSTM(nn.Module):
         self.flatten = TimeDistributed(nn.Flatten())
         self.blstm = nn.LSTM(input_size=features, bidirectional=True,
                              hidden_size=16, num_layers=blstm_layers)
-        self.output = TimeDistributed(nn.Linear(32, output_size))
-        self.output.weight.data.normal_(0, 0.01)
+        linear = nn.Linear(32, output_size)
+        linear.weight.data.normal_(0, 0.01)
+        self.output = TimeDistributed(linear)
 
 
     def forward(self, x):
