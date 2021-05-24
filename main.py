@@ -113,14 +113,14 @@ def main(args, folds=10):
     print("Loading data...")
     dataset = args.dataset
     proc_style = '_' + args.preprocessing
+    old = True if args.preprocessing == 'old' else False
+        
     pproc = preprocessor.Preprocessor(window_length=1, offset=0, stride=9, frequency=args.timesteps)
     if not os.path.exists("cached/" + pproc.append_options(dataset + proc_style)):
         if dataset == 'hmr':
-            pproc.process_folder_parallel('data_hmr', 'cached/hmr' + proc_style, workers=12)
-        elif dataset == 'ibdt':
-            pproc.process_folder_parallel('etra2016-ibdt-dataset/transformed', 'cached/ibdt', workers=12)
+            pproc.process_folder_parallel('data_hmr', 'cached/hmr' + proc_style, workers=12, old=old)
         elif dataset == 'gazecom':
-            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom' + proc_style, workers=12)
+            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom' + proc_style, workers=12, old=old)
    
     #fold = pproc.load_data_k_fold_parallel('cached/'+pproc.append_options(dataset), workers=8)
     fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset + proc_style), folds=folds)
