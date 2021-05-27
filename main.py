@@ -112,7 +112,26 @@ def get_model(args, layers, features):
                          features, lstm_layers=2)
         model.cuda()
         return model
-        
+
+
+def get_optimizer(args, model, learning_rate):
+    if args.model == 'tcn':
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    elif args.model == 'cnn_blstm' or args.model == 'cnn_lstm':
+        optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
+    return optimizer 
+
+
+def check_randomize(args, trX, trY):
+    trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
+    trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):] 
+    if args.randomize:
+        shuffler = np.random.permutation(len(trY))
+        trX = trX[shuffler]
+        trY = trY[shuffler]
+    return trX, trY, trX_val, trY_val
+
+
 
 
 def main(args, folds=10):
@@ -133,10 +152,7 @@ def main(args, folds=10):
     fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset + proc_style), folds=folds)
     for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
-        #breaking training data into train/dev sets
-        trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
-        trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):] 
-
+        trX, trY, trX_val, trY_val = check_randomize(args, trX, trY)
         train_size = len(trY)
         test_size  = len(trY_val)
         n_classes  = 4
@@ -149,7 +165,7 @@ def main(args, folds=10):
         lr = 0.01
         
         model = get_model(args, channel_sizes, features)
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        optimizer = get_optimizer(args, model, lr)
         num_test_batches = test_size//batch_size
 
         for epoch in range(1, epochs+1):
@@ -220,5 +236,9 @@ if __name__=="__main__":
                            '--timesteps',
                            required=True,
                            type=int)
+    argparser.add_argument('-r',
+                           '--randomize',
+                            required=False,
+                            action='store_true')
     args = argparser.parse_args()
     main(args)
