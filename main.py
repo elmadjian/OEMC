@@ -1,5 +1,6 @@
 from tcn import TCN
 from cnn_blstm import CNN_BLSTM
+from cnn_lstm import CNN_LSTM
 import torch
 import torch.nn.functional as F
 import preprocessor
@@ -101,11 +102,17 @@ def get_model(args, layers, features):
                     kernel_size=args.kernel_size, dropout=args.dropout)
         model.cuda()
         return model
-    if args.model == 'cnn_blstm':
+    elif args.model == 'cnn_blstm':
         model = CNN_BLSTM(args.timesteps, 4, args.kernel_size, args.dropout,
                           features, blstm_layers=2)
         model.cuda()
         return model
+    elif args.model == 'cnn_lstm':
+        model = CNN_LSTM(args.timesteps, 4, args.kernel_size, args.dropout,
+                         features, lstm_layers=2)
+        model.cuda()
+        return model
+        
 
 
 def main(args, folds=10):
@@ -191,7 +198,7 @@ if __name__=="__main__":
     argparser.add_argument('-m',
                            '--model',
                             required=True,
-                            choices=['tcn', 'cnn_blstm'])
+                            choices=['tcn', 'cnn_blstm', 'cnn_lstm'])
     argparser.add_argument('-b',
                            '--batch_size',
                            required=False,
