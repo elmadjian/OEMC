@@ -151,6 +151,7 @@ class Preprocessor():
             print(f'>>> Loading fold {k+1}...')
             X_base, Y_base = None, None
             for dirpath, dirnames, files in os.walk(base_path):
+                dirnames.sort()
                 for f in files:
                     src = os.path.join(dirpath, f)
                     data = np.load(src, mmap_mode='r')
@@ -172,6 +173,7 @@ class Preprocessor():
             train_Y, test_Y = np.empty((0,)), np.empty((0,))
             data_array, futures = [], []
             for dirpath, dirnames, files in os.walk(base_path):
+                dirnames.sort()
                 for f in files:
                     src = os.path.join(dirpath, f)
                     data = np.load(src, mmap_mode='r')
