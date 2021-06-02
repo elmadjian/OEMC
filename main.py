@@ -1,4 +1,5 @@
 from tcn import TCN
+from tcn_non_causal import TCN_NC
 from cnn_blstm import CNN_BLSTM
 from cnn_lstm import CNN_LSTM
 import torch
@@ -97,21 +98,21 @@ def set_randomness(seed):
 
 
 def get_model(args, layers, features):
+    model = None
     if args.model == 'tcn':
         model = TCN(args.timesteps, 4, layers,
                     kernel_size=args.kernel_size, dropout=args.dropout)
-        model.cuda()
-        return model
+    elif args.model == 'tcn_non_causal':
+        model = TCN_NC(args.timesteps, 4, layers, 
+                    kernel_size=args.kernel_size, dropout=args.dropout)
     elif args.model == 'cnn_blstm':
         model = CNN_BLSTM(args.timesteps, 4, args.kernel_size, args.dropout,
                           features, blstm_layers=2)
-        model.cuda()
-        return model
     elif args.model == 'cnn_lstm':
         model = CNN_LSTM(args.timesteps, 4, args.kernel_size, args.dropout,
                          features, lstm_layers=2)
-        model.cuda()
-        return model
+    model.cuda()
+    return model
 
 
 def get_optimizer(args, model, learning_rate):
@@ -134,8 +135,9 @@ def check_randomize(args, trX, trY):
 
 
 
-def main(args, folds=10):
+def main(args):
     set_randomness(0)
+    folds = args.folds
     print("Loading data...")
     dataset = args.dataset
     proc_style = '_' + args.preprocessing
@@ -213,7 +215,7 @@ if __name__=="__main__":
     argparser.add_argument('-m',
                            '--model',
                             required=True,
-                            choices=['tcn', 'cnn_blstm', 'cnn_lstm'])
+                            choices=['tcn', 'tcn_non_causal', 'cnn_blstm', 'cnn_lstm'])
     argparser.add_argument('-b',
                            '--batch_size',
                            required=False,
@@ -221,9 +223,11 @@ if __name__=="__main__":
     argparser.add_argument('--dropout',
                             required=False,
                             default=0.25)
-    argparser.add_argument('--epochs',
-                            required=False,
-                            default=25)
+    argparser.add_argument('-e',
+                           '--epochs',
+                           required=False,
+                           default=25,
+                           type=int)
     argparser.add_argument('--kernel_size',
                             required=False,
                             default=5)
@@ -239,5 +243,10 @@ if __name__=="__main__":
                            '--randomize',
                             required=False,
                             action='store_true')
+    argparser.add_argument('-f',
+		           '--folds',
+                           required=False,
+                           default=10,
+                           type=int)
     args = argparser.parse_args()
     main(args)
