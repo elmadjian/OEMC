@@ -115,9 +115,9 @@ def get_model(args, layers, features):
 
 
 def get_optimizer(args, model, learning_rate):
-    if args.model == 'tcn':
+    if args.model.startswith('tcn'):
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    elif args.model == 'cnn_blstm' or args.model == 'cnn_lstm':
+    elif args.model.startswith('cnn'):
         optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
     return optimizer 
 
@@ -148,7 +148,6 @@ def main(args, folds=10):
         elif dataset == 'gazecom':
             pproc.process_folder_parallel('data_gazecom', 'cached/gazecom' + proc_style, workers=12, old=old)
    
-    #fold = pproc.load_data_k_fold_parallel('cached/'+pproc.append_options(dataset), workers=8)
     fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset + proc_style), folds=folds)
     for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
@@ -192,8 +191,8 @@ def main(args, folds=10):
         print(f'\nFINAL TEST - fold {fold_i+1}:\n--------------')
         t_loss, preds, labels = predict(model, num_test_batches, batch_size, teX, teY, pproc)
         print_scores(preds, labels, t_loss)
-        model_param = "tcn_model_{}_BATCH-{}_LAYERS-{}_EPOCHS-{}_FOLD-{}".format(
-            dataset, batch_size, len(channel_sizes), epochs, fold_i+1
+        model_param = "tcn_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
+            dataset, batch_size, epochs, fold_i+1
         )
         save_test_output(model_param, preds, labels)
         if not os.path.exists('models'):
