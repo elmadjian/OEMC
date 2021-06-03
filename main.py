@@ -155,7 +155,7 @@ def main(args):
         trX, trY, teX, teY = next(fold)
         trX, trY, trX_val, trY_val = check_randomize(args, trX, trY)
         train_size = len(trY)
-        test_size  = len(trY_val)
+        val_size   = len(trY_val)
         n_classes  = 4
         features   = trX.shape[1]
         batch_size = args.batch_size
@@ -167,7 +167,7 @@ def main(args):
         
         model = get_model(args, channel_sizes, features)
         optimizer = get_optimizer(args, model, lr)
-        num_test_batches = test_size//batch_size
+        num_test_batches = val_size//batch_size
 
         for epoch in range(1, epochs+1):
             cost = 0
@@ -191,6 +191,7 @@ def main(args):
                     param_group['lr'] = lr
         
         print(f'\nFINAL TEST - fold {fold_i+1}:\n--------------')
+        num_test_batches = len(teY)//batch_size
         t_loss, preds, labels = predict(model, num_test_batches, batch_size, teX, teY, pproc)
         print_scores(preds, labels, t_loss)
         model_param = "tcn_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
@@ -244,7 +245,7 @@ if __name__=="__main__":
                             required=False,
                             action='store_true')
     argparser.add_argument('-f',
-		           '--folds',
+		                   '--folds',
                            required=False,
                            default=10,
                            type=int)
