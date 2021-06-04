@@ -6,7 +6,7 @@ import re
 
 class Scorer():
     
-    def __init__(self, base_path, model_params, folds):
+    def __init__(self, base_path=None, model_params=None, folds=None):
         self.base_path = base_path
         self.model = model_params
         self.folds = folds

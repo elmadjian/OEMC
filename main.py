@@ -133,8 +133,6 @@ def check_randomize(args, trX, trY):
     return trX, trY, trX_val, trY_val
 
 
-
-
 def main(args):
     set_randomness(0)
     folds = args.folds
