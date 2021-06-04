@@ -93,8 +93,12 @@ def print_scores(total_pred, total_label, test_loss):
 
 def set_randomness(seed):
     torch.manual_seed(seed)
-    random.seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.cuda.manual_seed(seed)
     np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def get_model(args, layers, features):
@@ -141,12 +145,13 @@ def main(args):
     proc_style = '_' + args.preprocessing
     old = True if args.preprocessing == 'old' else False
         
-    pproc = preprocessor.Preprocessor(window_length=1, offset=0, stride=9, frequency=args.timesteps)
+    pproc = preprocessor.Preprocessor(window_length=1, offset=args.offset, 
+                            stride=args.strides, frequency=args.timesteps)
     if not os.path.exists("cached/" + pproc.append_options(dataset + proc_style)):
         if dataset == 'hmr':
-            pproc.process_folder_parallel('data_hmr', 'cached/hmr' + proc_style, workers=12, old=old)
+            pproc.process_folder_parallel('data_hmr','cached/hmr'+proc_style, workers=12, old=old)
         elif dataset == 'gazecom':
-            pproc.process_folder_parallel('data_gazecom', 'cached/gazecom' + proc_style, workers=12, old=old)
+            pproc.process_folder_parallel('data_gazecom','cached/gazecom'+proc_style, workers=12, old=old)
    
     fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset + proc_style), folds=folds)
     for fold_i in range(folds):
@@ -246,6 +251,16 @@ if __name__=="__main__":
 		                   '--folds',
                            required=False,
                            default=10,
+                           type=int)
+    argparser.add_argument('-s',
+                           '--strides',
+                           required=False,
+                           default=8,
+                           type=int)
+    argparser.add_argument('-o',
+                           '--offset',
+                           required=False,
+                           default=0,
                            type=int)
     args = argparser.parse_args()
     main(args)

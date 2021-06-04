@@ -22,7 +22,7 @@ class Scorer():
 
     def score(self):
         for fold in range(self.folds):
-            path = self.base_path + '/' + self.model + str(fold+1) + '.npz'
+            path = os.path.join(self.base_path, self.model + str(fold+1) + '.npz')
             data = np.load(path, mmap_mode='r')
             preds = data['pred']
             gt = data['gt']
@@ -209,7 +209,8 @@ class Scorer():
 
 
 if __name__=="__main__":
-    scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_LAYERS-4_EPOCHS-25_FOLD-', 10)
-    scorer.score()
-    #scorer = Scorer('', '', 1)
-    #scorer.score_gazecom('gaze-com-classification')
+    #scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_LAYERS-4_EPOCHS-25_FOLD-', 10)
+    #scorer.score()
+    scorer = Scorer()
+    #scorer.score_ibdt('/home/cadu/GIT/gaze-com-classification/training_best_intervals/', 'gazecom')
+    scorer.score_ibdt('hmr_classification', 'hmr')

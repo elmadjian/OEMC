@@ -25,6 +25,7 @@ class TemporalBlock(nn.Module):
         self.chomp1 = Chomp1d(padding)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(dropout)
+        #self.batchnorm = nn.BatchNorm1d(30)
 
         self.conv2 = weight_norm(nn.Conv1d(n_outputs, n_outputs, kernel_size,
                                            stride=stride, padding=padding, dilation=dilation))
@@ -32,7 +33,7 @@ class TemporalBlock(nn.Module):
         self.relu2 = nn.ReLU()
         self.dropout2 = nn.Dropout(dropout)
 
-        self.net = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,
+        self.net = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,# self.batchnorm,
                                  self.conv2, self.chomp2, self.relu2, self.dropout2)
         self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         self.relu = nn.ReLU()

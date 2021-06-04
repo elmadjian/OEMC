@@ -248,68 +248,7 @@ class Preprocessor():
             target_list.append(target)
         return np.array(feat_list), np.array(target_list)
 
-
-    def process_data_old(self, data):
-        '''
-        '''
-        windows = [1, 2, 4, 8, 16, 32, 64, 128]
-        latency = 1000/self.frequency #in ms
-        x = data['X_coord'].to_numpy()
-        y = data['Y_coord'].to_numpy()
-        c = data['Confidence'].to_numpy()
-        p = data['Pattern'].to_numpy()
-        X,Y = self.extract_features_old(x,y,c,p, windows, latency)
-        return X, Y
-        #return self.create_batches_old(X, Y)
-
-
-    def extract_features_old(self, x, y, conf, targets, windows, latency):
-        tr_tensor  = np.zeros((len(x), 2*len(windows)))
-        tgt_tensor = np.zeros(len(targets),)
-        for i in range(len(x)):
-            for j in range(len(windows)):
-                w = windows[j]
-                step = np.math.ceil(w/2)
-                start_pos, end_pos = self._get_start_end(i,step,w,x)
-                if start_pos == end_pos:
-                    continue
-                diff_x = x[end_pos] - x[start_pos]
-                diff_y = y[end_pos] - y[start_pos]
-                ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
-                time   = ((end_pos - start_pos)*latency)/1000
-                tr_tensor[i][j] = ampl/time
-                tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
-            tgt_tensor[i] = self._convert_label(targets[i])
-        return tr_tensor, tgt_tensor
-
     
-    def create_batches(self, X, Y, start, end):
-        final_batch_X = []
-        win_span = int(np.ceil(self.frequency * self.length))
-        final_batch_Y = Y[win_span-1+start:-1+end]
-        for i in range(start, end-win_span):
-            batch_X = X[i:i+win_span,:]
-            final_batch_X.append(batch_X)
-        final_batch_X = np.array(final_batch_X)
-        batch_X = torch.from_numpy(final_batch_X).float()
-        batch_Y = torch.from_numpy(final_batch_Y).long()
-        return batch_X, batch_Y
-
-
-    def _get_start_end(self, i, step, win_width, data):
-        if step == win_width:
-            start_pos = i - step
-            end_pos = i
-        else:
-            start_pos = i - step
-            end_pos = i + step
-        if start_pos < 0:
-            start_pos = i
-        if end_pos >= len(data):
-            end_pos = i
-        return start_pos, end_pos
-
-
     def extract_features(self, data, i, stride):
         '''
         i is the index to the rightmost position in the window
@@ -317,7 +256,7 @@ class Preprocessor():
         x_ini = data.loc[i,'X_coord']
         y_ini = data.loc[i,'Y_coord']
         c_ini = data.loc[i,'Confidence']
-        strides = [2**val for val in range(stride)]
+        strides = [2**val for val in range(self.stride)]
         fac = (self.frequency * self.length)/strides[-1]
         strides = [int(np.ceil(i*fac)) for i in strides]
         speeds, directions, confs = [],[],[]
@@ -340,6 +279,70 @@ class Preprocessor():
         speed = (displ/delta_t) * 1000
         direc = np.math.atan2(diff_y, diff_x)
         return speed, direc
+
+
+    def process_data_old(self, data):
+        '''
+        '''
+        strides = [2**val for val in range(self.stride)]
+        fac = (self.frequency * self.length)/strides[-1]
+        strides = [int(np.ceil(i*fac)) for i in strides]
+        latency = 1000/self.frequency #in ms
+        x = data['X_coord'].to_numpy()
+        y = data['Y_coord'].to_numpy()
+        c = data['Confidence'].to_numpy()
+        p = data['Pattern'].to_numpy()
+        X,Y = self.extract_features_old(x,y,c,p, strides, latency)
+        return X, Y
+        #return self.create_batches_old(X, Y)
+
+
+    def extract_features_old(self, x, y, conf, targets, windows, latency):
+        tr_tensor  = np.zeros((len(x), 2*len(windows)))
+        tgt_tensor = np.zeros(len(targets),)
+        ini = int(np.ceil(self.frequency * self.length))
+        for i in range(ini, len(x)):
+            for j in range(len(windows)):
+                w = windows[j]
+                start_pos, end_pos = self._get_start_end(i,w,x)
+                if start_pos == end_pos:
+                    continue
+                diff_x = x[end_pos] - x[start_pos]
+                diff_y = y[end_pos] - y[start_pos]
+                ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
+                time   = ((end_pos - start_pos)*latency)/1000
+                #saving speed
+                tr_tensor[i][j] = ampl/time
+                #mod saving direction
+                tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
+            tgt_tensor[i] = self._convert_label(targets[i+self.offset])
+        return tr_tensor, tgt_tensor
+
+
+    def _get_start_end(self, i, step, data):
+        '''
+        i -> the most recent position
+        '''
+        end_pos = i
+        start_pos = i - step
+        if end_pos >= len(data):
+            end_pos = i
+        if start_pos < 0:
+            start_pos = 0
+        return start_pos, end_pos
+
+    
+    def create_batches(self, X, Y, start, end):
+        final_batch_X = []
+        win_span = int(np.ceil(self.frequency * self.length))
+        final_batch_Y = Y[win_span-1+start:-1+end]
+        for i in range(start, end-win_span):
+            batch_X = X[i:i+win_span,:]
+            final_batch_X.append(batch_X)
+        final_batch_X = np.array(final_batch_X)
+        batch_X = torch.from_numpy(final_batch_X).float()
+        batch_Y = torch.from_numpy(final_batch_Y).long()
+        return batch_X, batch_Y
 
 
     def _convert_label(self, target):
