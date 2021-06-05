@@ -11,7 +11,6 @@ import random
 import scorer
 import argparse
 
-#TODO: implementar um "classificador online" para rodar em tempo real
 
 def train(model, optimizer, x_val, y_val):
     model.train()
@@ -97,7 +96,6 @@ def set_randomness(seed):
     torch.cuda.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-    torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
 
@@ -121,7 +119,7 @@ def get_model(args, layers, features):
 
 def get_optimizer(args, model, learning_rate):
     if args.model.startswith('tcn'):
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        optimizer = torch.optim.Adamax(model.parameters(), lr=learning_rate)
     elif args.model.startswith('cnn'):
         optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
     return optimizer 
@@ -142,18 +140,16 @@ def main(args):
     folds = args.folds
     print("Loading data...")
     dataset = args.dataset
-    proc_style = '_' + args.preprocessing
-    old = True if args.preprocessing == 'old' else False
         
     pproc = preprocessor.Preprocessor(window_length=1, offset=args.offset, 
                             stride=args.strides, frequency=args.timesteps)
-    if not os.path.exists("cached/" + pproc.append_options(dataset + proc_style)):
+    if not os.path.exists("cached/" + pproc.append_options(dataset)):
         if dataset == 'hmr':
-            pproc.process_folder_parallel('data_hmr','cached/hmr'+proc_style, workers=12, old=old)
+            pproc.process_folder_parallel('data_hmr','cached/hmr', workers=12)
         elif dataset == 'gazecom':
-            pproc.process_folder_parallel('data_gazecom','cached/gazecom'+proc_style, workers=12, old=old)
+            pproc.process_folder_parallel('data_gazecom','cached/gazecom', workers=12)
    
-    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset + proc_style), folds=folds)
+    fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset), folds=folds)
     for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
         trX, trY, trX_val, trY_val = check_randomize(args, trX, trY)
@@ -165,11 +161,12 @@ def main(args):
         epochs     = args.epochs
         channel_sizes = [30]*4
         timesteps  = args.timesteps
+        losses = []
         steps = 0
         lr = 0.01
         
         model = get_model(args, channel_sizes, features)
-        optimizer = get_optimizer(args, model, lr)
+        optimizer = get_optimizer(args, model, lr[0])
         num_test_batches = val_size//batch_size
 
         for epoch in range(1, epochs+1):
@@ -187,13 +184,15 @@ def main(args):
                     ), end='\r')
                     cost = 0
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc)
+            losses.append(t_loss)
             print_scores(preds, labels, t_loss)
-            if epoch % 6 == 0:
-                lr /= 5
+            if losses >= 2 and np.abs(losses[-1] - losses[-2]) < 0.003:
+                lr /= 2
+                print(f'[Epoch {epoch}]: Updating learning rate to {lr}')
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
         
-        print(f'\nFINAL TEST - fold {fold_i+1}:\n--------------')
+        print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
         num_test_batches = len(teY)//batch_size
         t_loss, preds, labels = predict(model, num_test_batches, batch_size, teX, teY, pproc)
         print_scores(preds, labels, t_loss)
@@ -235,10 +234,6 @@ if __name__=="__main__":
     argparser.add_argument('--kernel_size',
                             required=False,
                             default=5)
-    argparser.add_argument('-p',
-                           '--preprocessing',
-                           required=False,
-                           default='old')
     argparser.add_argument('-t',
                            '--timesteps',
                            required=True,

@@ -18,7 +18,7 @@ class Preprocessor():
         self.train_Y, self.test_Y = np.empty((0,)), np.empty((0,))
 
 
-    def process_folder(self, base_path, out_path, old=False):
+    def process_folder(self, base_path, out_path):
         '''
         Extract features from a folder containing the
         dataset. The processed files are stored in an
@@ -35,15 +35,12 @@ class Preprocessor():
                 outfile = os.path.join(out_path, patt[0], f[:-4])
                 print(f'>>> extracting features from {src}...')
                 data = self.load_file(src)
-                if old:
-                    X,Y = self.process_data_old(data)
-                else:
-                    X,Y = self.process_data(data, self.stride, self.offset)
+                X,Y = self.process_data(data, self.stride, self.offset)
                 self.save_processed_file(X, Y, outfile)
 
 
-    def process_folder_parallel(self, base_path, out_path, workers, old=False):
-        srcs, outfiles, olds = [], [], []
+    def process_folder_parallel(self, base_path, out_path, workers):
+        srcs, outfiles = [], []
         out_path = self.append_options(out_path)
         for dirpath, dirnames, files in os.walk(base_path):
             for f in files:
@@ -55,18 +52,14 @@ class Preprocessor():
                     os.makedirs(outpath)
                 outfile = os.path.join(out_path, patt[0], f[:-4])
                 outfiles.append(outfile)
-                olds.append(old)
         with ProcessPoolExecutor(max_workers=workers) as executor:
-            executor.map(self._process_one, srcs, outfiles, olds, timeout=90)
+            executor.map(self._process_one, srcs, outfiles, timeout=90)
 
     
-    def _process_one(self, src, outfile, old):
+    def _process_one(self, src, outfile):
         print(f'>>> extracting features from {src}...')
         data = self.load_file(src)
-        if old:
-            X,Y = self.process_data_old(data)
-        else:
-            X,Y = self.process_data(data, self.stride, self.offset)
+        X,Y = self.process_data(data)
         self.save_processed_file(X, Y, outfile)
 
 
@@ -79,6 +72,8 @@ class Preprocessor():
         base_path = self.append_options(base_path)
         X_base, Y_base = None, None
         for dirpath, dirnames, files in os.walk(base_path):
+            dirnames.sort()
+            files.sort()
             for f in files:
                 src = os.path.join(dirpath, f)
                 data = np.load(src, mmap_mode='r')
@@ -104,6 +99,8 @@ class Preprocessor():
         print('>>> Loading data...')
         data_array, futures = [], []
         for dirpath, dirnames, files in os.walk(base_path):
+            dirnames.sort()
+            files.sort()
             for f in files:
                 src = os.path.join(dirpath, f)
                 data = np.load(src, mmap_mode='r')
@@ -228,7 +225,50 @@ class Preprocessor():
         np.savez(file_path, X=X, Y=Y)
 
 
-    def process_data(self, data, stride, target_offset):
+    # def process_data(self, data, stride, target_offset):
+    #     feat_list, target_list = [],[]
+    #     ini = int(np.ceil(self.frequency * self.length))
+    #     for i in range(ini, len(data)):
+    #         features = self.extract_features(data, i, stride)
+    #         target = self._convert_label(data.loc[i+target_offset,'Pattern'])
+    #         feat_list.append(features)
+    #         target_list.append(target)
+    #     return np.array(feat_list), np.array(target_list)
+
+    
+    # def extract_features(self, data, i, stride):
+    #     '''
+    #     i is the index to the rightmost position in the window
+    #     '''
+    #     x_ini = data.loc[i,'X_coord']
+    #     y_ini = data.loc[i,'Y_coord']
+    #     c_ini = data.loc[i,'Confidence']
+    #     strides = [2**val for val in range(self.stride)]
+    #     fac = (self.frequency * self.length)/strides[-1]
+    #     strides = [int(np.ceil(i*fac)) for i in strides]
+    #     speeds, directions, confs = [],[],[]
+    #     for j in strides:
+    #         pos = i-j
+    #         x_end = data.loc[pos, 'X_coord']
+    #         y_end = data.loc[pos, 'Y_coord']
+    #         p1, p2 = (x_ini,y_ini), (x_end,y_end)
+    #         speed, direc = self.calculate_features(p1,p2,j)
+    #         speeds.append(speed)
+    #         directions.append(direc)
+    #         confs.append(data.loc[pos, 'Confidence'])
+    #     return np.array(speeds + directions + confs)
+
+
+    # def calculate_features(self, p1, p2, delta_t):
+    #     diff_x = p1[0]-p2[0]
+    #     diff_y = p1[1]-p2[1]
+    #     displ = np.math.sqrt(diff_x**2 + diff_y**2)
+    #     speed = (displ/delta_t) * 1000
+    #     direc = np.math.atan2(diff_y, diff_x)
+    #     return speed, direc
+
+
+    def process_data(self, data):
         '''
         data: dataframe to extract features from
         stride: number of multiscale windows of powers of 2, i.e.:
@@ -239,72 +279,26 @@ class Preprocessor():
                        an offset of 1 = next sample is the target
                        an offset of -5 = look-ahead of 5 
         '''
-        feat_list, target_list = [],[]
-        ini = int(np.ceil(self.frequency * self.length))
-        for i in range(ini, len(data)):
-            features = self.extract_features(data, i, stride)
-            target = self._convert_label(data.loc[i+target_offset,'Pattern'])
-            feat_list.append(features)
-            target_list.append(target)
-        return np.array(feat_list), np.array(target_list)
-
-    
-    def extract_features(self, data, i, stride):
-        '''
-        i is the index to the rightmost position in the window
-        '''
-        x_ini = data.loc[i,'X_coord']
-        y_ini = data.loc[i,'Y_coord']
-        c_ini = data.loc[i,'Confidence']
         strides = [2**val for val in range(self.stride)]
         fac = (self.frequency * self.length)/strides[-1]
-        strides = [int(np.ceil(i*fac)) for i in strides]
-        speeds, directions, confs = [],[],[]
-        for j in strides:
-            pos = i-j
-            x_end = data.loc[pos, 'X_coord']
-            y_end = data.loc[pos, 'Y_coord']
-            p1, p2 = (x_ini,y_ini), (x_end,y_end)
-            speed, direc = self.calculate_features(p1,p2,j)
-            speeds.append(speed)
-            directions.append(direc)
-            confs.append(data.loc[pos, 'Confidence'])
-        return np.array(speeds + directions + confs)
-
-
-    def calculate_features(self, p1, p2, delta_t):
-        diff_x = p1[0]-p2[0]
-        diff_y = p1[1]-p2[1]
-        displ = np.math.sqrt(diff_x**2 + diff_y**2)
-        speed = (displ/delta_t) * 1000
-        direc = np.math.atan2(diff_y, diff_x)
-        return speed, direc
-
-
-    def process_data_old(self, data):
-        '''
-        '''
-        strides = [2**val for val in range(self.stride)]
-        fac = (self.frequency * self.length)/strides[-1]
-        strides = [int(np.ceil(i*fac)) for i in strides]
+        window = [int(np.ceil(i*fac)) for i in strides]
         latency = 1000/self.frequency #in ms
         x = data['X_coord'].to_numpy()
         y = data['Y_coord'].to_numpy()
         c = data['Confidence'].to_numpy()
         p = data['Pattern'].to_numpy()
-        X,Y = self.extract_features_old(x,y,c,p, strides, latency)
+        X,Y = self.extract_features_old(x,y,c,p, window, latency)
         return X, Y
-        #return self.create_batches_old(X, Y)
 
 
-    def extract_features_old(self, x, y, conf, targets, windows, latency):
-        tr_tensor  = np.zeros((len(x), 2*len(windows)))
+    def extract_features(self, x, y, conf, targets, windows, latency):
+        tr_tensor  = np.zeros((len(x), 2*len(windows)+1)) #2*num_features+conf
         tgt_tensor = np.zeros(len(targets),)
         ini = int(np.ceil(self.frequency * self.length))
         for i in range(ini, len(x)):
             for j in range(len(windows)):
                 w = windows[j]
-                start_pos, end_pos = self._get_start_end(i,w,x)
+                start_pos, end_pos = self._get_start_end(i,w)
                 if start_pos == end_pos:
                     continue
                 diff_x = x[end_pos] - x[start_pos]
@@ -313,20 +307,21 @@ class Preprocessor():
                 time   = ((end_pos - start_pos)*latency)/1000
                 #saving speed
                 tr_tensor[i][j] = ampl/time
-                #mod saving direction
+                #saving direction % window
                 tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
+                tr_tensor[i][-1] = conf[i+self.offset]
+            print(tr_tensor[i])
+            input()
             tgt_tensor[i] = self._convert_label(targets[i+self.offset])
         return tr_tensor, tgt_tensor
 
 
-    def _get_start_end(self, i, step, data):
+    def _get_start_end(self, i, step):
         '''
         i -> the most recent position
         '''
         end_pos = i
         start_pos = i - step
-        if end_pos >= len(data):
-            end_pos = i
         if start_pos < 0:
             start_pos = 0
         return start_pos, end_pos
@@ -335,7 +330,7 @@ class Preprocessor():
     def create_batches(self, X, Y, start, end):
         final_batch_X = []
         win_span = int(np.ceil(self.frequency * self.length))
-        final_batch_Y = Y[win_span-1+start:-1+end]
+        final_batch_Y = Y[start:end-win_span]
         for i in range(start, end-win_span):
             batch_X = X[i:i+win_span,:]
             final_batch_X.append(batch_X)
