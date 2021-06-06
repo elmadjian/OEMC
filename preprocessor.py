@@ -249,7 +249,7 @@ class Preprocessor():
 
 
     def extract_features(self, x, y, conf, targets, windows, latency):
-        tr_tensor  = np.zeros((len(x), 4*len(windows))) #num X sets of features
+        tr_tensor  = np.zeros((len(x), 3*len(windows))) #num X sets of features
         tgt_tensor = np.zeros(len(targets),)
         ini = int(np.ceil(self.frequency * self.length))
         for i in range(ini, len(x)):
