@@ -250,7 +250,7 @@ class Preprocessor():
 
 
     def extract_features(self, x, y, conf, targets, windows, latency):
-        tr_tensor  = np.zeros((len(x), 3*len(windows))) #num X sets of features
+        tr_tensor  = np.zeros((len(x), 2*len(windows))) #num X sets of features
         tgt_tensor = np.zeros(len(targets),)
         ini = int(np.ceil(self.frequency * self.length))
         for i in range(ini, len(x)):
@@ -268,7 +268,7 @@ class Preprocessor():
                 #saving direction % window
                 tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
                 #saving conf levels
-                tr_tensor[i][j+2*len(windows)] = np.median(conf[start_pos:end_pos+1])
+                #tr_tensor[i][j+2*len(windows)] = self._calculate_std(x, y, start_pos, end_pos+1)
             tgt_tensor[i] = self._convert_label(targets[i+self.offset])
         return tr_tensor, tgt_tensor
 
@@ -283,17 +283,33 @@ class Preprocessor():
             start_pos = 0
         return start_pos, end_pos
 
+
+    def _calculate_std(self, x, y, ini, end):
+        X = x[ini:end]
+        Y = y[ini:end]
+        XY = np.array((X,Y)).T
+        direc = np.arctan2(Y,X)[1:].mean()
+        diff = np.diff(XY, axis=0, prepend=XY[-1].reshape((1,-1)))[1:]
+        squared = np.power(diff,2).sum(axis=1)
+        return np.std(squared)
+
     
-    def create_batches(self, X, Y, start, end):
-        final_batch_X = []
-        win_span = int(np.ceil(self.frequency * self.length))
-        final_batch_Y = Y[start:end-win_span]
-        for i in range(start, end-win_span):
-            batch_X = X[i:i+win_span,:]
-            final_batch_X.append(batch_X)
+    def create_batches(self, X, Y, start, end, timesteps):
+        if timesteps == 1:
+            return self._create_batches_single(X, Y, start, end)
+        final_batch_Y = Y[start+timesteps-1:end-1]
+        final_batch_X = [X[i:i+timesteps,:] for i in range(start, end-timesteps)]
         final_batch_X = np.array(final_batch_X)
-        batch_X = torch.from_numpy(final_batch_X).float()
-        batch_Y = torch.from_numpy(final_batch_Y).long()
+        batch_X = torch.from_numpy(final_batch_X).float().cuda()
+        batch_Y = torch.from_numpy(final_batch_Y).long().cuda()
+        return batch_X, batch_Y
+
+    def _create_batches_single(self, X, Y, start, end):
+        b_Y = Y[start:end]
+        b_X = X[start:end]
+        b_X = b_X.reshape(b_X.shape[0],1,b_X.shape[1])
+        batch_X = torch.from_numpy(b_X).float().cuda()
+        batch_Y = torch.from_numpy(b_Y).long().cuda()
         return batch_X, batch_Y
 
 

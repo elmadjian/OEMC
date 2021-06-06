@@ -10,12 +10,11 @@ import numpy as np
 import random
 import scorer
 import argparse
+import time
 
 
-def train(model, optimizer, x_val, y_val):
+def train(model, optimizer, x, y):
     model.train()
-    x = torch.autograd.Variable(x_val, requires_grad=False).cuda()
-    y = torch.autograd.Variable(y_val, requires_grad=False).cuda()
     optimizer.zero_grad()
     output = model(x)
     loss = F.nll_loss(output, y)
@@ -24,11 +23,9 @@ def train(model, optimizer, x_val, y_val):
     return loss.item()
 
 
-def test(model, x_val, y_val):
+def test(model, x, y):
     model.eval()
     with torch.no_grad():
-        x = torch.autograd.Variable(x_val, requires_grad=False).cuda()
-        y = torch.autograd.Variable(y_val, requires_grad=False).cuda()
         output = model(x)
         loss = F.nll_loss(output, y, reduction='sum').item()
         pred = output.data.max(1, keepdim=True)[1]
@@ -64,14 +61,14 @@ def save_test_output(model_path, preds, labels):
     np.savez(output_path, pred=preds.numpy(), gt=labels.numpy())
 
 
-def predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc):
+def predict(model, num_test_batches, batch_size, trX_val, trY_val, timesteps, pproc):
     total_pred = torch.Tensor([]).cuda()
     total_label = torch.Tensor([]).cuda()
     test_loss = 0
     test_size = len(trY_val)
     for k in range(num_test_batches):
         start, end = k*batch_size, (k+1)*batch_size
-        X,Y = pproc.create_batches(trX_val, trY_val, start, end)
+        X,Y = pproc.create_batches(trX_val, trY_val, start, end, timesteps)
         preds, labels, loss = test(model, X, Y)
         test_loss += loss
         total_pred = torch.cat([total_pred, preds], dim=0)
@@ -141,12 +138,13 @@ def main(args):
     print("Loading data...")
     dataset = args.dataset
         
-    pproc = preprocessor.Preprocessor(window_length=1, offset=args.offset, 
-                            stride=args.strides, frequency=args.timesteps)
+    pproc = preprocessor.Preprocessor(window_length=1,offset=args.offset,stride=args.strides,)
     if not os.path.exists("cached/" + pproc.append_options(dataset)):
         if dataset == 'hmr':
+            pproc.frequency = 200
             pproc.process_folder_parallel('data_hmr','cached/hmr', workers=12)
         elif dataset == 'gazecom':
+            pproc.frequency = 250
             pproc.process_folder_parallel('data_gazecom','cached/gazecom', workers=12)
    
     fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset), folds=folds)
@@ -167,23 +165,24 @@ def main(args):
         
         model = get_model(args, channel_sizes, features)
         optimizer = get_optimizer(args, model, lr)
+        num_batches = train_size//batch_size
         num_test_batches = val_size//batch_size
 
         for epoch in range(1, epochs+1):
             cost = 0
-            num_batches = train_size//batch_size
             for k in range(num_batches):
                 start, end = k * batch_size, (k+1) * batch_size
-                trainX, trainY = pproc.create_batches(trX, trY, start, end) 
+                trainX, trainY = pproc.create_batches(trX, trY, start, end, timesteps) 
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
                 if k > 0 and (k % (num_batches//20) == 0 or k == num_batches-1):
-                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tSteps: {}'.format(
+                    print('Train Epoch: {:2} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tSteps: {}'.format(
                         epoch, start, train_size,
                         100*k/num_batches, cost/num_batches, steps 
                     ), end='\r')
                     #cost = 0
-            t_loss, preds, labels = predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc)
+            t_loss, preds, labels = predict(model, num_test_batches, batch_size, 
+                                            trX_val, trY_val, timesteps, pproc)
             losses.append(t_loss)
             print_scores(preds, labels, t_loss, 'Val.')
             if len(losses) >= 2 and (np.abs(losses[-1]-losses[-2]) < 0.0025 
@@ -195,7 +194,8 @@ def main(args):
         
         print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
         num_test_batches = len(teY)//batch_size
-        t_loss, preds, labels = predict(model, num_test_batches, batch_size, teX, teY, pproc)
+        t_loss, preds, labels = predict(model, num_test_batches, batch_size, 
+                                        teX, teY, timesteps, pproc)
         print_scores(preds, labels, t_loss, 'Test')
         model_param = "tcn_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
             dataset, batch_size, epochs, fold_i+1
@@ -254,7 +254,7 @@ if __name__=="__main__":
     argparser.add_argument('-s',
                            '--strides',
                            required=False,
-                           default=8,
+                           default=9,
                            type=int)
     argparser.add_argument('-o',
                            '--offset',
