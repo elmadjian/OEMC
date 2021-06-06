@@ -137,14 +137,14 @@ def main(args):
     folds = args.folds
     print("Loading data...")
     dataset = args.dataset
+    freq = 200 if dataset == 'hmr' else 250
         
-    pproc = preprocessor.Preprocessor(window_length=1,offset=args.offset,stride=args.strides,)
+    pproc = preprocessor.Preprocessor(window_length=1,offset=args.offset,
+                                      stride=args.strides,frequency=freq)
     if not os.path.exists("cached/" + pproc.append_options(dataset)):
         if dataset == 'hmr':
-            pproc.frequency = 200
             pproc.process_folder_parallel('data_hmr','cached/hmr', workers=12)
         elif dataset == 'gazecom':
-            pproc.frequency = 250
             pproc.process_folder_parallel('data_gazecom','cached/gazecom', workers=12)
    
     fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset), folds=folds)
@@ -176,7 +176,7 @@ def main(args):
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
                 if k > 0 and (k % (num_batches//20) == 0 or k == num_batches-1):
-                    print('Train Epoch: {:2} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tSteps: {}'.format(
+                    print('Train Epoch: {:2} [{}/{} ({:.0f}%)]  Loss: {:.5f}  Steps: {}'.format(
                         epoch, start, train_size,
                         100*k/num_batches, cost/num_batches, steps 
                     ), end='\r')
