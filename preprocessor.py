@@ -267,8 +267,6 @@ class Preprocessor():
                 tr_tensor[i][j] = ampl/time
                 #saving direction % window
                 tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
-                #saving conf levels
-                #tr_tensor[i][j+2*len(windows)] = self._calculate_std(x, y, start_pos, end_pos+1)
             tgt_tensor[i] = self._convert_label(targets[i+self.offset])
         return tr_tensor, tgt_tensor
 
@@ -284,30 +282,29 @@ class Preprocessor():
         return start_pos, end_pos
 
 
-    def _calculate_std(self, x, y, ini, end):
-        X = x[ini:end]
-        Y = y[ini:end]
-        XY = np.array((X,Y)).T
-        direc = np.arctan2(Y,X)[1:].mean()
-        diff = np.diff(XY, axis=0, prepend=XY[-1].reshape((1,-1)))[1:]
-        squared = np.power(diff,2).sum(axis=1)
-        return np.std(squared)
-
-    
-    def create_batches(self, X, Y, start, end, timesteps):
+    def create_batches(self, X, Y, start, end, timesteps, randomize=False):
         if timesteps == 1:
-            return self._create_batches_single(X, Y, start, end)
-        final_batch_Y = Y[start+timesteps-1:end-1]
-        final_batch_X = [X[i:i+timesteps,:] for i in range(start, end-timesteps)]
-        final_batch_X = np.array(final_batch_X)
-        batch_X = torch.from_numpy(final_batch_X).float().cuda()
-        batch_Y = torch.from_numpy(final_batch_Y).long().cuda()
+            return self._create_batches_single(X, Y, start, end, randomize)
+        b_Y = Y[start+timesteps-1:end-1]
+        b_X = np.array([X[i:i+timesteps,:] for i in range(start, end-timesteps)])
+        if randomize:
+            shuffler = np.random.permutation(len(b_Y))
+            b_X = b_X[shuffler]
+            b_Y = b_Y[shuffler]
+        batch_X = torch.from_numpy(b_X).float().cuda()
+        batch_Y = torch.from_numpy(b_Y).long().cuda()
         return batch_X, batch_Y
 
-    def _create_batches_single(self, X, Y, start, end):
+
+
+    def _create_batches_single(self, X, Y, start, end, randomize):
         b_Y = Y[start:end]
         b_X = X[start:end]
         b_X = b_X.reshape(b_X.shape[0],1,b_X.shape[1])
+        if randomize:
+            shuffler = np.random.permutation(len(b_Y))
+            b_X = b_X[shuffler]
+            b_Y = b_Y[shuffler]
         batch_X = torch.from_numpy(b_X).float().cuda()
         batch_Y = torch.from_numpy(b_Y).long().cuda()
         return batch_X, batch_Y

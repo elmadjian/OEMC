@@ -101,7 +101,7 @@ def get_model(args, layers, features):
     if args.model == 'tcn':
         model = TCN(args.timesteps, 4, layers,
                     kernel_size=args.kernel_size, dropout=args.dropout)
-    elif args.model == 'tcn_non_causal':
+    elif args.model == 'tcn_nc':
         model = TCN_NC(args.timesteps, 4, layers, 
                     kernel_size=args.kernel_size, dropout=args.dropout)
     elif args.model == 'cnn_blstm':
@@ -122,16 +122,6 @@ def get_optimizer(args, model, learning_rate):
     return optimizer 
 
 
-def check_randomize(args, trX, trY):
-    trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
-    trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):] 
-    if args.randomize:
-        shuffler = np.random.permutation(len(trY))
-        trX = trX[shuffler]
-        trY = trY[shuffler]
-    return trX, trY, trX_val, trY_val
-
-
 def main(args):
     set_randomness(0)
     folds = args.folds
@@ -150,7 +140,8 @@ def main(args):
     fold = pproc.load_data_k_fold('cached/'+pproc.append_options(dataset), folds=folds)
     for fold_i in range(folds):
         trX, trY, teX, teY = next(fold)
-        trX, trY, trX_val, trY_val = check_randomize(args, trX, trY)
+        trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
+        trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):] 
         train_size = len(trY)
         val_size   = len(trY_val)
         n_classes  = 4
@@ -159,6 +150,7 @@ def main(args):
         epochs     = args.epochs
         channel_sizes = [30]*4
         timesteps  = args.timesteps
+        rand = args.randomize
         losses = []
         steps = 0
         lr = 0.01
@@ -172,7 +164,7 @@ def main(args):
             cost = 0
             for k in range(num_batches):
                 start, end = k * batch_size, (k+1) * batch_size
-                trainX, trainY = pproc.create_batches(trX, trY, start, end, timesteps) 
+                trainX, trainY = pproc.create_batches(trX, trY, start, end, timesteps, rand) 
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
                 if k > 0 and (k % (num_batches//20) == 0 or k == num_batches-1):
@@ -180,7 +172,6 @@ def main(args):
                         epoch, start, train_size,
                         100*k/num_batches, cost/num_batches, steps 
                     ), end='\r')
-                    #cost = 0
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, 
                                             trX_val, trY_val, timesteps, pproc)
             losses.append(t_loss)
@@ -219,7 +210,7 @@ if __name__=="__main__":
     argparser.add_argument('-m',
                            '--model',
                             required=True,
-                            choices=['tcn', 'tcn_non_causal', 'cnn_blstm', 'cnn_lstm'])
+                            choices=['tcn', 'tcn_nc', 'cnn_blstm', 'cnn_lstm'])
     argparser.add_argument('-b',
                            '--batch_size',
                            required=False,
