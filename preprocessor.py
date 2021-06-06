@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 import os
 import re
+import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 
@@ -258,15 +259,16 @@ class Preprocessor():
                 start_pos, end_pos = self._get_start_end(i,w)
                 if start_pos == end_pos:
                     continue
-                conf_w = np.median(conf[start_pos:end_pos+1])
-                ampl, direc = self._calculate_features(x, y, start_pos, end_pos+1)
+                diff_x = x[end_pos] - x[start_pos]
+                diff_y = y[end_pos] - y[start_pos]
+                ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
                 time   = ((end_pos - start_pos)*latency)/1000
                 #saving speed
                 tr_tensor[i][j] = ampl/time
                 #saving direction % window
-                tr_tensor[i][j+len(windows)] = direc#p.math.atan2(diff_y, diff_x)
-                #saving confidence
-                tr_tensor[i][j+2*len(windows)] = conf_w
+                tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
+                #saving conf levels
+                tr_tensor[i][j+2*len(windows)] = np.median(conf[start_pos:end_pos+1])
             tgt_tensor[i] = self._convert_label(targets[i+self.offset])
         return tr_tensor, tgt_tensor
 
@@ -280,19 +282,6 @@ class Preprocessor():
         if start_pos < 0:
             start_pos = 0
         return start_pos, end_pos
-
-
-    def _calculate_features(self, x, y, ini, end):
-        X = x[ini:end]
-        Y = y[ini:end]
-        XY = np.array((X,Y)).T
-        direc = np.arctan2(Y,X)[1:].mean()
-        diff = np.diff(XY, axis=0, prepend=XY[-1].reshape((1,-1)))[1:]
-        squared = np.power(diff,2).sum(axis=1)
-        dist = np.sqrt(squared)
-        total_dist = dist.sum()
-        return total_dist, direc
-
 
     
     def create_batches(self, X, Y, start, end):

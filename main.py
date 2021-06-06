@@ -177,7 +177,7 @@ def main(args):
                 trainX, trainY = pproc.create_batches(trX, trY, start, end) 
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
-                if k > 0 and k % (num_batches//10) == 0:
+                if k > 0 and (k % (num_batches//20) == 0 or k == num_batches-1):
                     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tSteps: {}'.format(
                         epoch, start, train_size,
                         100*k/num_batches, cost/num_batches, steps 
@@ -185,7 +185,7 @@ def main(args):
                     #cost = 0
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc)
             losses.append(t_loss)
-            print_scores(preds, labels, t_loss, 'Validation')
+            print_scores(preds, labels, t_loss, 'Val.')
             if len(losses) >= 2 and (np.abs(losses[-1]-losses[-2]) < 0.0025 
                                      or losses[-1] > losses[-2]):
                 lr /= 2
@@ -223,10 +223,12 @@ if __name__=="__main__":
     argparser.add_argument('-b',
                            '--batch_size',
                            required=False,
-                           default=2048)
+                           default=2048,
+                           type=int)
     argparser.add_argument('--dropout',
                             required=False,
-                            default=0.25)
+                            default=0.25,
+                            type=float)
     argparser.add_argument('-e',
                            '--epochs',
                            required=False,
@@ -234,7 +236,8 @@ if __name__=="__main__":
                            type=int)
     argparser.add_argument('--kernel_size',
                             required=False,
-                            default=5)
+                            default=5,
+                            type=int)
     argparser.add_argument('-t',
                            '--timesteps',
                            required=True,
