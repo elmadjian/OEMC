@@ -80,13 +80,13 @@ def predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc):
     return test_loss, total_pred, total_label
 
 
-def print_scores(total_pred, total_label, test_loss):
+def print_scores(total_pred, total_label, test_loss, name):
     f1_fix = f1_score(total_pred, total_label, 0)*100
     f1_sacc = f1_score(total_pred, total_label, 1)*100
     f1_sp = f1_score(total_pred, total_label, 2)*100
     f1_blink = f1_score(total_pred, total_label, 3)*100
-    print('\nTest set: Average loss: {:.4f}, F1_FIX: {:.2f}%, F1_SACC: {:.2f}%, F1_SP: {:.2f}%, F1_BLK: {:.2f}%\n'.format(
-        test_loss, f1_fix, f1_sacc, f1_sp, f1_blink
+    print('\n{} set: Average loss: {:.4f}, F1_FIX: {:.2f}%, F1_SACC: {:.2f}%, F1_SP: {:.2f}%, F1_BLK: {:.2f}%\n'.format(
+        name, test_loss, f1_fix, f1_sacc, f1_sp, f1_blink
     ))
 
 
@@ -166,7 +166,7 @@ def main(args):
         lr = 0.01
         
         model = get_model(args, channel_sizes, features)
-        optimizer = get_optimizer(args, model, lr[0])
+        optimizer = get_optimizer(args, model, lr)
         num_test_batches = val_size//batch_size
 
         for epoch in range(1, epochs+1):
@@ -180,22 +180,23 @@ def main(args):
                 if k > 0 and k % (num_batches//10) == 0:
                     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tSteps: {}'.format(
                         epoch, start, train_size,
-                        100 * k / num_batches, cost/batch_size, steps 
+                        100*k/num_batches, cost/num_batches, steps 
                     ), end='\r')
-                    cost = 0
+                    #cost = 0
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, trX_val, trY_val, pproc)
             losses.append(t_loss)
-            print_scores(preds, labels, t_loss)
-            if losses >= 2 and np.abs(losses[-1] - losses[-2]) < 0.003:
+            print_scores(preds, labels, t_loss, 'Validation')
+            if len(losses) >= 2 and (np.abs(losses[-1]-losses[-2]) < 0.0025 
+                                     or losses[-1] > losses[-2]):
                 lr /= 2
-                print(f'[Epoch {epoch}]: Updating learning rate to {lr}')
+                print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
         
         print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
         num_test_batches = len(teY)//batch_size
         t_loss, preds, labels = predict(model, num_test_batches, batch_size, teX, teY, pproc)
-        print_scores(preds, labels, t_loss)
+        print_scores(preds, labels, t_loss, 'Test')
         model_param = "tcn_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
             dataset, batch_size, epochs, fold_i+1
         )

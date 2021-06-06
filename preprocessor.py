@@ -35,7 +35,7 @@ class Preprocessor():
                 outfile = os.path.join(out_path, patt[0], f[:-4])
                 print(f'>>> extracting features from {src}...')
                 data = self.load_file(src)
-                X,Y = self.process_data(data, self.stride, self.offset)
+                X,Y = self.process_data(data)
                 self.save_processed_file(X, Y, outfile)
 
 
@@ -287,12 +287,12 @@ class Preprocessor():
         y = data['Y_coord'].to_numpy()
         c = data['Confidence'].to_numpy()
         p = data['Pattern'].to_numpy()
-        X,Y = self.extract_features_old(x,y,c,p, window, latency)
+        X,Y = self.extract_features(x,y,c,p, window, latency)
         return X, Y
 
 
     def extract_features(self, x, y, conf, targets, windows, latency):
-        tr_tensor  = np.zeros((len(x), 2*len(windows)+1)) #2*num_features+conf
+        tr_tensor  = np.zeros((len(x), 4*len(windows))) #num X sets of features
         tgt_tensor = np.zeros(len(targets),)
         ini = int(np.ceil(self.frequency * self.length))
         for i in range(ini, len(x)):
@@ -301,17 +301,23 @@ class Preprocessor():
                 start_pos, end_pos = self._get_start_end(i,w)
                 if start_pos == end_pos:
                     continue
-                diff_x = x[end_pos] - x[start_pos]
-                diff_y = y[end_pos] - y[start_pos]
-                ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
+                #diff_x = x[end_pos] - x[start_pos]
+                #diff_y = y[end_pos] - y[start_pos]
+                #print('diff_x:', diff_x, 'diff_y:', diff_y)
+                conf_w = np.median(conf[start_pos:end_pos+1])
+                ampl, direc, freq = self._calculate_features(x, y, start_pos, end_pos+1)
+                #ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
                 time   = ((end_pos - start_pos)*latency)/1000
                 #saving speed
                 tr_tensor[i][j] = ampl/time
                 #saving direction % window
-                tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
-                tr_tensor[i][-1] = conf[i+self.offset]
-            print(tr_tensor[i])
-            input()
+                tr_tensor[i][j+len(windows)] = direc#p.math.atan2(diff_y, diff_x)
+                #saving confidence
+                tr_tensor[i][j+2*len(windows)] = conf_w
+                #saving frequency
+                tr_tensor[i][j+2*len(windows)] = freq
+            # print(tr_tensor[i], 'target:', targets[i])
+            # input()
             tgt_tensor[i] = self._convert_label(targets[i+self.offset])
         return tr_tensor, tgt_tensor
 
@@ -325,6 +331,22 @@ class Preprocessor():
         if start_pos < 0:
             start_pos = 0
         return start_pos, end_pos
+
+    def _calculate_features(self, x, y, ini, end):
+        X = x[ini:end]
+        Y = y[ini:end]
+        XY = np.array((X,Y)).T
+        direc = np.arctan2(Y,X)[1:].mean()
+        diff = np.diff(XY, axis=0, prepend=XY[-1].reshape((1,-1)))[1:]
+        squared = np.power(diff,2).sum(axis=1)
+        dist = np.sqrt(squared)
+        total_dist = dist.sum()
+        tf = np.fft.rfft(dist)
+        if len(tf) > 1:
+            tf = np.max(tf[1:])
+        tf = np.angle(tf)
+        return total_dist, direc, tf
+
 
     
     def create_batches(self, X, Y, start, end):
@@ -353,12 +375,8 @@ class Preprocessor():
 
 
 if __name__=='__main__':
-    preprocessor = Preprocessor(window_length=1.28)
-    #preprocessor.process_folder('data_hmr/', 'cached/hmr/')
-    #preprocessor.process_folder('data_gazecom', 'cached/gazecom/')
-    #preprocessor.process_folder_parallel('data_hmr', 'cached/hmr', 12)
-    #preprocessor.process_folder('etra2016-ibdt-dataset/transformed/', 'cached/ibdt/')
-    #preprocessor.load_processed_data_parallel('cached/gazecom')
-    #preprocessor.process_folder('data_hmr/', 'cached/hmr_old', old=True)
-    preprocessor.load_processed_data('cached/hmr')
+    preprocessor = Preprocessor(window_length=1, offset=0, 
+                                stride=9, frequency=250)
+    #preprocessor.process_folder('data_gazecom','cached/gazecom')
+    preprocessor.process_folder('data_hmr', 'cached/hmr')
 
