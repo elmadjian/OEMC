@@ -225,49 +225,6 @@ class Preprocessor():
         np.savez(file_path, X=X, Y=Y)
 
 
-    # def process_data(self, data, stride, target_offset):
-    #     feat_list, target_list = [],[]
-    #     ini = int(np.ceil(self.frequency * self.length))
-    #     for i in range(ini, len(data)):
-    #         features = self.extract_features(data, i, stride)
-    #         target = self._convert_label(data.loc[i+target_offset,'Pattern'])
-    #         feat_list.append(features)
-    #         target_list.append(target)
-    #     return np.array(feat_list), np.array(target_list)
-
-    
-    # def extract_features(self, data, i, stride):
-    #     '''
-    #     i is the index to the rightmost position in the window
-    #     '''
-    #     x_ini = data.loc[i,'X_coord']
-    #     y_ini = data.loc[i,'Y_coord']
-    #     c_ini = data.loc[i,'Confidence']
-    #     strides = [2**val for val in range(self.stride)]
-    #     fac = (self.frequency * self.length)/strides[-1]
-    #     strides = [int(np.ceil(i*fac)) for i in strides]
-    #     speeds, directions, confs = [],[],[]
-    #     for j in strides:
-    #         pos = i-j
-    #         x_end = data.loc[pos, 'X_coord']
-    #         y_end = data.loc[pos, 'Y_coord']
-    #         p1, p2 = (x_ini,y_ini), (x_end,y_end)
-    #         speed, direc = self.calculate_features(p1,p2,j)
-    #         speeds.append(speed)
-    #         directions.append(direc)
-    #         confs.append(data.loc[pos, 'Confidence'])
-    #     return np.array(speeds + directions + confs)
-
-
-    # def calculate_features(self, p1, p2, delta_t):
-    #     diff_x = p1[0]-p2[0]
-    #     diff_y = p1[1]-p2[1]
-    #     displ = np.math.sqrt(diff_x**2 + diff_y**2)
-    #     speed = (displ/delta_t) * 1000
-    #     direc = np.math.atan2(diff_y, diff_x)
-    #     return speed, direc
-
-
     def process_data(self, data):
         '''
         data: dataframe to extract features from
@@ -301,12 +258,8 @@ class Preprocessor():
                 start_pos, end_pos = self._get_start_end(i,w)
                 if start_pos == end_pos:
                     continue
-                #diff_x = x[end_pos] - x[start_pos]
-                #diff_y = y[end_pos] - y[start_pos]
-                #print('diff_x:', diff_x, 'diff_y:', diff_y)
                 conf_w = np.median(conf[start_pos:end_pos+1])
-                ampl, direc, freq = self._calculate_features(x, y, start_pos, end_pos+1)
-                #ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
+                ampl, direc = self._calculate_features(x, y, start_pos, end_pos+1)
                 time   = ((end_pos - start_pos)*latency)/1000
                 #saving speed
                 tr_tensor[i][j] = ampl/time
@@ -314,10 +267,6 @@ class Preprocessor():
                 tr_tensor[i][j+len(windows)] = direc#p.math.atan2(diff_y, diff_x)
                 #saving confidence
                 tr_tensor[i][j+2*len(windows)] = conf_w
-                #saving frequency
-                tr_tensor[i][j+2*len(windows)] = freq
-            # print(tr_tensor[i], 'target:', targets[i])
-            # input()
             tgt_tensor[i] = self._convert_label(targets[i+self.offset])
         return tr_tensor, tgt_tensor
 
@@ -332,6 +281,7 @@ class Preprocessor():
             start_pos = 0
         return start_pos, end_pos
 
+
     def _calculate_features(self, x, y, ini, end):
         X = x[ini:end]
         Y = y[ini:end]
@@ -341,11 +291,7 @@ class Preprocessor():
         squared = np.power(diff,2).sum(axis=1)
         dist = np.sqrt(squared)
         total_dist = dist.sum()
-        tf = np.fft.rfft(dist)
-        if len(tf) > 1:
-            tf = np.max(tf[1:])
-        tf = np.angle(tf)
-        return total_dist, direc, tf
+        return total_dist, direc
 
 
     
