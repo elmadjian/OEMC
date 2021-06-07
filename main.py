@@ -96,6 +96,16 @@ def set_randomness(seed):
     torch.backends.cudnn.benchmark = False
 
 
+def check_randomize(args, trX, trY):
+    trX, trX_val = trX[:int(len(trX)*0.9)], trX[int(len(trX)*0.9):]
+    trY, trY_val = trY[:int(len(trY)*0.9)], trY[int(len(trY)*0.9):] 
+    if args.randomize and args.timesteps == 1:
+        shuffler = np.random.permutation(len(trY))
+        trX = trX[shuffler]
+        trY = trY[shuffler]
+    return trX, trY, trX_val, trY_val
+
+
 def get_model(args, layers, features):
     model = None
     if args.model == 'tcn':
