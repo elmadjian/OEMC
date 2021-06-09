@@ -133,7 +133,7 @@ def get_optimizer(args, model, learning_rate):
 
 
 def get_best_model(model, best_model, score, best_score):
-    if model is not None and score is not None:
+    if best_model is not None and best_score is not None:
         if score < best_score:
             return model, score
     return best_model, best_score
