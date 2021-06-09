@@ -287,6 +287,10 @@ class Preprocessor():
             return self._create_batches_single(X, Y, start, end, randomize)
         b_Y = Y[start+timesteps-1:end-1]
         b_X = np.array([X[i:i+timesteps,:] for i in range(start, end-timesteps)])
+        if randomize:
+            shuffler = np.random.permutation(len(b_Y))
+            b_X = b_X[shuffler]
+            b_Y = b_Y[shuffler]
         batch_X = torch.from_numpy(b_X).float().cuda()
         batch_Y = torch.from_numpy(b_Y).long().cuda()
         return batch_X, batch_Y

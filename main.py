@@ -132,6 +132,13 @@ def get_optimizer(args, model, learning_rate):
     return optimizer 
 
 
+def get_best_model(model, best_model, score, best_score):
+    if model is not None and score is not None:
+        if score < best_score:
+            return model, score
+    return best_model, best_score
+
+
 def main(args):
     set_randomness(0)
     folds = args.folds
@@ -163,12 +170,16 @@ def main(args):
         rand = args.randomize
         losses = []
         steps = 0
-        lr = 0.01
+        lr = args.lr
         
         model = get_model(args, channel_sizes, features)
+        best_model, best_score = None, None
         optimizer = get_optimizer(args, model, lr)
         num_batches = train_size//batch_size
         num_test_batches = val_size//batch_size
+
+        print(f'>>> train size: {train_size}')
+        print(f'>>> total batches: {num_batches}')
 
         for epoch in range(1, epochs+1):
             cost = 0
@@ -177,7 +188,7 @@ def main(args):
                 trainX, trainY = pproc.create_batches(trX, trY, start, end, timesteps, rand) 
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
-                if k > 0 and (k % (num_batches//20) == 0 or k == num_batches-1):
+                if k > 0 and (k % (num_batches//10) == 0 or k == num_batches-1):
                     print('Train Epoch: {:2} [{}/{} ({:.0f}%)]  Loss: {:.5f}  Steps: {}'.format(
                         epoch, start, train_size,
                         100*k/num_batches, cost/num_batches, steps 
@@ -192,10 +203,11 @@ def main(args):
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
+            best_model, best_score = get_best_model(model, best_model, t_loss, best_score)
         
         print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
         num_test_batches = len(teY)//batch_size
-        t_loss, preds, labels = predict(model, num_test_batches, batch_size, 
+        t_loss, preds, labels = predict(best_model, num_test_batches, batch_size, 
                                         teX, teY, timesteps, pproc)
         print_scores(preds, labels, t_loss, 'Test')
         model_param = "tcn_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
@@ -204,7 +216,7 @@ def main(args):
         save_test_output(model_param, preds, labels)
         if not os.path.exists('models'):
             os.makedirs('models')
-        torch.save(model.state_dict(), 'models/' + model_param + '.pt')
+        torch.save(best_model.state_dict(), 'models/' + model_param + '.pt')
     model_name = model_param[:-1] if folds < 9 else model_param[:-2]
     scorer_final = scorer.Scorer('outputs/', model_name, folds=folds)
     scorer_final.score()
@@ -262,5 +274,9 @@ if __name__=="__main__":
                            required=False,
                            default=0,
                            type=int)
+    argparser.add_argument('--lr',
+                            required=False,
+                            default=0.01,
+                            type=float)
     args = argparser.parse_args()
     main(args)
