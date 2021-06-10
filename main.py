@@ -196,7 +196,7 @@ def main(args):
                                             trX_val, trY_val, timesteps, pproc)
             losses.append(t_loss)
             print_scores(preds, labels, t_loss, 'Val.')
-            if len(losses) >= 2 and (np.abs(losses[-1]-losses[-2]) < 0.0025 
+            if len(losses) >= 2 and (np.abs(losses[-1]-losses[-2]) < 0.002 
                                      or losses[-1] > losses[-2]):
                 lr /= 2
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
