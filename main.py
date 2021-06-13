@@ -82,8 +82,9 @@ def print_scores(total_pred, total_label, test_loss, name):
     f1_sacc = f1_score(total_pred, total_label, 1)*100
     f1_sp = f1_score(total_pred, total_label, 2)*100
     f1_blink = f1_score(total_pred, total_label, 3)*100
-    print('\n{} set: Average loss: {:.4f}, F1_FIX: {:.2f}%, F1_SACC: {:.2f}%, F1_SP: {:.2f}%, F1_BLK: {:.2f}%\n'.format(
-        name, test_loss, f1_fix, f1_sacc, f1_sp, f1_blink
+    f1_avg = (f1_fix + f1_sacc + f1_sp + f1_blink)/4
+    print('\n{} set: Average loss: {:.4f}, F1_FIX: {:.2f}%, F1_SACC: {:.2f}%, F1_SP: {:.2f}%, F1_BLK: {:.2f}%, AVG: {:.2f}%\n'.format(
+        name, test_loss, f1_fix, f1_sacc, f1_sp, f1_blink, f1_avg
     ))
     return (f1_fix + f1_sacc + f1_sp + f1_blink)/4
 
