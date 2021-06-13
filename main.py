@@ -204,7 +204,7 @@ def main(args):
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
-            best_model, best_score = get_best_model(model, best_model, t_loss, best_score)
+            best_model, best_score = get_best_model(model, best_model, score, best_score)
         
         print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
         num_test_batches = len(teY)//batch_size
