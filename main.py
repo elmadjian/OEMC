@@ -85,6 +85,7 @@ def print_scores(total_pred, total_label, test_loss, name):
     print('\n{} set: Average loss: {:.4f}, F1_FIX: {:.2f}%, F1_SACC: {:.2f}%, F1_SP: {:.2f}%, F1_BLK: {:.2f}%\n'.format(
         name, test_loss, f1_fix, f1_sacc, f1_sp, f1_blink
     ))
+    return (f1_fix + f1_sacc + f1_sp + f1_blink)/4
 
 
 def set_randomness(seed):
@@ -167,7 +168,7 @@ def main(args):
         channel_sizes = [30]*3
         timesteps  = args.timesteps
         rand = args.randomize
-        losses = []
+        scores = []
         steps = 0
         lr = args.lr
         
@@ -194,10 +195,10 @@ def main(args):
                     ), end='\r')
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, 
                                             trX_val, trY_val, timesteps, pproc)
-            losses.append(t_loss)
-            print_scores(preds, labels, t_loss, 'Val.')
-            if len(losses) >= 3 and (np.abs(losses[-1]-losses[-3]) < 0.002 
-                                     or losses[-1] > losses[-3]):
+            score = print_scores(preds, labels, t_loss, 'Val.')
+            scores.append(score)
+            if len(scores) >= 3 and (np.abs(scores[-1]-scores[-3]) < 0.5 
+                                     or scores[-1] > scores[-3]):
                 lr /= 2
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
