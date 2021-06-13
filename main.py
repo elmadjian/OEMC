@@ -196,8 +196,8 @@ def main(args):
                                             trX_val, trY_val, timesteps, pproc)
             losses.append(t_loss)
             print_scores(preds, labels, t_loss, 'Val.')
-            if len(losses) >= 2 and (np.abs(losses[-1]-losses[-2]) < 0.002 
-                                     or losses[-1] > losses[-2]):
+            if len(losses) >= 3 and (np.abs(losses[-1]-losses[-3]) < 0.002 
+                                     or losses[-1] > losses[-3]):
                 lr /= 2
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
@@ -246,10 +246,11 @@ if __name__=="__main__":
                            required=False,
                            default=25,
                            type=int)
-    argparser.add_argument('--kernel_size',
-                            required=False,
-                            default=5,
-                            type=int)
+    argparser.add_argument('-k',
+                           '--kernel_size',
+                           required=False,
+                           default=5,
+                           type=int)
     argparser.add_argument('-t',
                            '--timesteps',
                            required=True,

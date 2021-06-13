@@ -8,7 +8,7 @@ import numpy as np
 class CNN_LSTM(nn.Module):
 
     def __init__(self, input_size, output_size, kernel_size, dropout, 
-                 features, lstm_layers, conv_filters=(32, 16, 8)):
+                 features, lstm_layers, conv_filters=(32, 16, 8, 8)):
         super(CNN_LSTM, self).__init__()
         self.conv_filters = conv_filters
         conv_layers = []
