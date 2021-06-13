@@ -197,8 +197,8 @@ def main(args):
                                             trX_val, trY_val, timesteps, pproc)
             score = print_scores(preds, labels, t_loss, 'Val.')
             scores.append(score)
-            if len(scores) >= 3 and (np.abs(scores[-1]-scores[-3]) < 0.5 
-                                     or scores[-1] > scores[-3]):
+            if len(scores) >= 3 and (np.abs(scores[-1]-scores[-3]) < 0.1 
+                                     or scores[-1] < scores[-3]):
                 lr /= 2
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
