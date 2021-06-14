@@ -134,9 +134,11 @@ def get_optimizer(args, model, learning_rate):
     return optimizer 
 
 
-def get_best_model(model, best_model, score, best_score):
-    if score < best_score:
-        return model, score
+def get_best_model(model, best_model, score, best_score, save_best=False):
+    if save_best:
+        if score < best_score:
+            print('>>> updating best model...')
+            return model, score
     return best_model, best_score
 
 
@@ -172,6 +174,7 @@ def main(args):
         scores = []
         steps = 0
         lr = args.lr
+        save_best = args.save_best
         
         model = get_model(args, channel_sizes, features)
         best_model, best_score = None, 9999
@@ -204,7 +207,7 @@ def main(args):
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
-            best_model, best_score = get_best_model(model, best_model, score, best_score)
+            best_model, best_score = get_best_model(model, best_model, score, best_score, save_best)
         
         print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
         num_test_batches = len(teY)//batch_size
@@ -262,7 +265,7 @@ if __name__=="__main__":
                             required=False,
                             action='store_true')
     argparser.add_argument('-f',
-		                   '--folds',
+                           '--folds',
                            required=False,
                            default=10,
                            type=int)
@@ -280,5 +283,8 @@ if __name__=="__main__":
                             required=False,
                             default=0.01,
                             type=float)
+    argparser.add_argument('--save_best',
+			   required=False,
+                           action='store_true')
     args = argparser.parse_args()
     main(args)
