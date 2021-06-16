@@ -82,8 +82,9 @@ def print_scores(total_pred, total_label, test_loss, name):
     f1_sacc = f1_score(total_pred, total_label, 1)*100
     f1_sp = f1_score(total_pred, total_label, 2)*100
     f1_blink = f1_score(total_pred, total_label, 3)*100
-    print('\n{} set: Average loss: {:.4f}, F1_FIX: {:.2f}%, F1_SACC: {:.2f}%, F1_SP: {:.2f}%, F1_BLK: {:.2f}%\n'.format(
-        name, test_loss, f1_fix, f1_sacc, f1_sp, f1_blink
+    f1_avg = (f1_fix + f1_sacc + f1_sp + f1_blink)/4
+    print('\n{} set: Average loss: {:.4f}, F1_FIX: {:.2f}%, F1_SACC: {:.2f}%, F1_SP: {:.2f}%, F1_BLK: {:.2f}%, AVG: {:.2f}%\n'.format(
+        name, test_loss, f1_fix, f1_sacc, f1_sp, f1_blink, f1_avg
     ))
     return (f1_fix + f1_sacc + f1_sp + f1_blink)/4
 
@@ -135,6 +136,7 @@ def get_optimizer(args, model, learning_rate):
 
 def get_best_model(model, best_model, score, best_score):
     if score < best_score:
+        print('>>> updating best model...')
         return model, score
     return best_model, best_score
 
@@ -197,14 +199,16 @@ def main(args):
                                             trX_val, trY_val, timesteps, pproc)
             score = print_scores(preds, labels, t_loss, 'Val.')
             scores.append(score)
-            if len(scores) >= 3 and (np.abs(scores[-1]-scores[-3]) < 0.5 
-                                     or scores[-1] > scores[-3]):
+            if len(scores) >= 3 and (np.abs(scores[-1]-scores[-3]) < 0.1 
+                                     or scores[-1] < scores[-3]):
                 lr /= 2
                 print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = lr
-            best_model, best_score = get_best_model(model, best_model, t_loss, best_score)
+            best_model, best_score = get_best_model(model, best_model, score, best_score)
         
+        if not args.save_best:
+            best_model = model
         print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
         num_test_batches = len(teY)//batch_size
         t_loss, preds, labels = predict(best_model, num_test_batches, batch_size, 
@@ -261,7 +265,7 @@ if __name__=="__main__":
                             required=False,
                             action='store_true')
     argparser.add_argument('-f',
-		                   '--folds',
+                           '--folds',
                            required=False,
                            default=10,
                            type=int)
@@ -279,5 +283,8 @@ if __name__=="__main__":
                             required=False,
                             default=0.01,
                             type=float)
+    argparser.add_argument('--save_best',
+			   required=False,
+                           action='store_true')
     args = argparser.parse_args()
     main(args)
