@@ -202,9 +202,10 @@ def main(args):
             if len(scores) >= 3 and (np.abs(scores[-1]-scores[-3]) < 0.1 
                                      or scores[-1] < scores[-3]):
                 lr /= 2
-                print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
-                for param_group in optimizer.param_groups:
-                    param_group['lr'] = lr
+                if not args.no_lr_decay:
+                    print('[Epoch {}]: Updating learning rate to {:6f}\n'.format(epoch, lr))
+                    for param_group in optimizer.param_groups:
+                        param_group['lr'] = lr
             best_model, best_score = get_best_model(model, best_model, score, best_score)
         
         if not args.save_best:
@@ -283,6 +284,9 @@ if __name__=="__main__":
                             required=False,
                             default=0.01,
                             type=float)
+    argparser.add_argument('--no_lr_decay',
+                           required=False,
+                           action='store_true')
     argparser.add_argument('--save_best',
 			   required=False,
                            action='store_true')
