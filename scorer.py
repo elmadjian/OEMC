@@ -184,27 +184,30 @@ class Scorer():
         while i < len(gt):
             patt = {0:0,1:0,2:0,3:0}
             g_0 = g_n = int(gt[i])
+            ini, end = i, i
             while g_0 == g_n and i < len(gt):
-                g_n = gt[i]
+                g_n = int(gt[i])
+                end = i
                 i += 1
-            event = np.array(gt[g_0:g_n])
+            event = np.array(preds[ini:end])
             for p in patt.keys():
                 patt[p] = np.count_nonzero(event==p)
-                if patt[p]/(g_n-g_0) > iou:
-                    if patt[p] == g_0:
+                if patt[p]/(end-ini) > iou:
+                    if p == g_0:
                         self.event_matrix[p]['tp'] += 1
                     else:
                         self.event_matrix[p]['fp'] += 1
                 else:
-                    if patt[p] == g_0:
+                    if p == g_0:
                         self.event_matrix[p]['fn'] += 1
                     else:
                         self.event_matrix[p]['tn'] += 1
 
 
+
 if __name__=="__main__":
-    #scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_LAYERS-4_EPOCHS-25_FOLD-', 10)
-    #scorer.score()
-    scorer = Scorer()
+    scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_EPOCHS-25_FOLD-', 10)
+    scorer.score()
+    #scorer = Scorer()
     #scorer.score_ibdt('/home/cadu/GIT/gaze-com-classification/training_best_intervals/', 'gazecom')
-    scorer.score_ibdt('hmr_classification', 'hmr')
+    #scorer.score_ibdt('hmr_classification', 'hmr')
