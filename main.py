@@ -135,7 +135,7 @@ def get_optimizer(args, model, learning_rate):
 
 
 def get_best_model(model, best_model, score, best_score):
-    if score < best_score:
+    if score > best_score:
         print('>>> updating best model...')
         return model, score
     return best_model, best_score
@@ -175,7 +175,7 @@ def main(args):
         lr = args.lr
         
         model = get_model(args, channel_sizes, features)
-        best_model, best_score = None, 9999
+        best_model, best_score = None, 0
         optimizer = get_optimizer(args, model, lr)
         num_batches = train_size//batch_size
         num_test_batches = val_size//batch_size
