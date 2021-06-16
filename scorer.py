@@ -182,30 +182,24 @@ class Scorer():
     def _count_event(self, preds, gt, iou=0.5):
         i = 0
         while i < len(gt):
-            vals = {0,1,2,3}
-            flagged = {0:False, 1:False, 2:False, 3:False}
+            patt = {0:0,1:0,2:0,3:0}
             g_0 = g_n = int(gt[i])
-            match = 0
-            ini = i
             while g_0 == g_n and i < len(gt):
                 g_n = gt[i]
-                if preds[i] == g_n:
-                    match += 1            
-                flagged[preds[i]] = True
                 i += 1
-            ratio = 0
-            if i != ini:
-                ratio = match/(i-ini)
-            if ratio > iou:
-                self.event_matrix[g_0]['tp'] += 1
-            else:
-                self.event_matrix[g_0]['fn'] += 1
-            vals.remove(g_0)
-            for val in vals:
-                if flagged[val]:
-                    self.event_matrix[val]['fp'] += 1
+            event = np.array(gt[g_0:g_n])
+            for p in patt.keys():
+                patt[p] = np.count_nonzero(event==p)
+                if patt[p]/(g_n-g_0) > iou:
+                    if patt[p] == g_0:
+                        self.event_matrix[p]['tp'] += 1
+                    else:
+                        self.event_matrix[p]['fp'] += 1
                 else:
-                    self.event_matrix[val]['tn'] += 1
+                    if patt[p] == g_0:
+                        self.event_matrix[p]['fn'] += 1
+                    else:
+                        self.event_matrix[p]['tn'] += 1
 
 
 if __name__=="__main__":
