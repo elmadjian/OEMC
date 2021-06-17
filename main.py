@@ -215,8 +215,8 @@ def main(args):
         t_loss, preds, labels = predict(best_model, num_test_batches, batch_size, 
                                         teX, teY, timesteps, pproc)
         print_scores(preds, labels, t_loss, 'Test')
-        model_param = "tcn_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
-            dataset, batch_size, epochs, fold_i+1
+        model_param = "{}_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
+            args.model, dataset, batch_size, epochs, fold_i+1
         )
         save_test_output(model_param, preds, labels)
         if not os.path.exists('models'):
