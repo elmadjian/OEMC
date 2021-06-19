@@ -3,13 +3,16 @@ import pandas as pd
 import glob
 import os
 import re
+import argparse
 
 class Scorer():
     
-    def __init__(self, base_path=None, model_params=None, folds=None):
-        self.base_path = base_path
-        self.model = model_params
-        self.folds = folds
+    def __init__(self, args):#base_path=None, model_params=None, folds=None):
+        self.base_path = args.outputs_path
+        self.dataset = args.dataset
+        self.model = f"{args.model}_model_{args.dataset}_BATCH-{args.batch_size}"
+        self.model += f"_EPOCHS-{args.epochs}_FOLD-"
+        self.folds = args.folds
         self.conf_matrix = [{'tp':0,'tn':0,'fp':0,'fn':0} for i in range(4)]
         self.event_matrix = [{'tp':0, 'tn':0, 'fp':0, 'fn':0} for i in range(4)]
         #self.individual = {}
@@ -32,12 +35,12 @@ class Scorer():
         self._show_results_event()
 
     
-    def score_ibdt(self, base_path, dataset):
-        pattern = os.path.join(base_path, '**/*.csv')
+    def score_ibdt(self):
+        pattern = os.path.join(self.base_path, '**/*.csv')
         files = glob.glob(pattern, recursive=True)
         preds = [name for name in files if 'classification.csv' in name]
         gts   = [name for name in files if 'reviewed.csv' in name]
-        users = self._index_users(preds, gts, dataset)
+        users = self._index_users(preds, gts, self.dataset)
         for user in users.keys():
             #self.individual[user] = {'FIX':0, 'SAC':0, 'SP':0}
             self._get_score_user(users[user], user)
@@ -206,8 +209,43 @@ class Scorer():
 
 
 if __name__=="__main__":
-    scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_EPOCHS-25_FOLD-', 10)
-    scorer.score()
+    #scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_EPOCHS-25_FOLD-', 10)
+    #scorer.score()
     #scorer = Scorer()
     #scorer.score_ibdt('/home/cadu/GIT/gaze-com-classification/training_best_intervals/', 'gazecom')
     #scorer.score_ibdt('hmr_classification', 'hmr')
+    #scorer
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d',
+                        '--dataset',
+                        required=True)
+    parser.add_argument('-m',
+                        '--model',
+                        required=False)
+    parser.add_argument('-b',
+                        '--batch_size',
+                        default=2048,
+                        required=False,
+                        type=int)
+    parser.add_argument('-e',
+                        '--epochs',
+                        default=25,
+                        required=False,
+                        type=int)
+    parser.add_argument('-f',
+                        '--folds',
+                        default=5,
+                        required=False,
+                        type=int)
+    parser.add_argument('--outputs_path',
+                        default='outputs/',
+                        required=False)
+    parser.add_argument('--ibdt',
+                        required=False,
+                        action='store_true')
+    args = parser.parse_args()
+    scorer = Scorer(args)
+    if args.ibdt:
+        scorer.score_ibdt()
+    else:
+        scorer.score()
