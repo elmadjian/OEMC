@@ -192,6 +192,9 @@ class Scorer():
                 g_n = int(gt[i])
                 end = i
                 i += 1
+            if ini == end:
+                i += 1
+                continue
             event = np.array(preds[ini:end])
             for p in patt.keys():
                 patt[p] = np.count_nonzero(event==p)
