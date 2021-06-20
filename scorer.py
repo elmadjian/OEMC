@@ -55,6 +55,7 @@ class Scorer():
         # print('SAC F1:', sac/user_tot)
         # print('SP F1:', sp/user_tot)
         self._show_results_sample()
+        self._show_results_event()
         
         
 
@@ -99,6 +100,7 @@ class Scorer():
         preds  = out_df['pattern'].tolist()
         gt     = gt_df['pattern'].tolist()
         self._count_sample(preds, gt)       
+        self._count_event(preds, gt)
 
 
     def _show_results_sample(self):
@@ -182,7 +184,7 @@ class Scorer():
                 self.conf_matrix[val]['tn'] += 1
 
     
-    def _count_event(self, preds, gt, iou=0.5):
+    def _count_event(self, preds, gt, iou=0.65):
         i = 0
         while i < len(gt):
             patt = {0:0,1:0,2:0,3:0}
