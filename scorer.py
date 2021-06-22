@@ -15,6 +15,8 @@ class Scorer():
         self.folds = args.folds
         self.conf_matrix = [{'tp':0,'tn':0,'fp':0,'fn':0} for i in range(4)]
         self.event_matrix = [{'tp':0, 'tn':0, 'fp':0, 'fn':0} for i in range(4)]
+        self.conf_total = {'tp':0, 'fp':0, 'fn':0}
+        self.event_total = {'tp':0, 'fp':0, 'fn':0}
         #self.individual = {}
 
 
@@ -105,12 +107,12 @@ class Scorer():
 
     def _show_results_sample(self):
         print("\n>>> Results on SAMPLE-LEVEL:")
-        self._f_score_calc(self.conf_matrix)
+        self._f_score_calc(self.conf_matrix, self.conf_total)
 
 
     def _show_results_event(self):
         print("\n>>> Results on EVENT-LEVEL:")
-        self._f_score_calc(self.event_matrix)
+        self._f_score_calc(self.event_matrix, self.event_total)
 
 
     def _f_score_calc_individual(self, matrix, user):
@@ -139,17 +141,29 @@ class Scorer():
             self.individual[user][name] += fscore
 
 
-    def _f_score_calc(self, matrix):
+    def _f_score_calc(self, matrix, total):
         for patt in range(len(matrix)):
             tp = matrix[patt]['tp']
             fp = matrix[patt]['fp']
             fn = matrix[patt]['fn']
+            total['tp'] += tp
+            total['fp'] += fp
+            total['fn'] += fn
             precision, recall = 0, 0
             if tp + fp > 0:
                 precision = tp/(tp+fp)
             if tp + fn > 0:
                 recall = tp/(tp+fn)
             self._print_pattern(patt, precision, recall)
+        precision, recall = 0, 0
+        tp = total['tp']
+        fp = total['fp']
+        fn = total['fn']
+        if tp + fp > 0:
+            precision = tp/(tp + fp)
+        if tp + fn > 0:
+            recall = tp/(tp + fn)
+        self._print_pattern('TOTAL', precision, recall)
 
 
     def _print_pattern(self, patt, precision, recall):
@@ -160,8 +174,10 @@ class Scorer():
             pattern = "Saccade"
         elif patt == 2:
             pattern = "Smooth Pursuit"
-        else:
+        elif patt == 3:
             pattern = "Blink"
+        else:
+            pattern = "Total"
         fscore = 0
         if precision * recall != 0:
             fscore = 2*(precision * recall) / (precision + recall)

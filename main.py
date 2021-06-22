@@ -167,7 +167,7 @@ def main(args):
         features   = trX.shape[1]
         batch_size = args.batch_size
         epochs     = args.epochs
-        channel_sizes = [30]*3
+        channel_sizes = [30]*4
         timesteps  = args.timesteps
         rand = args.randomize
         scores = []
