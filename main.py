@@ -223,7 +223,8 @@ def main(args):
             os.makedirs('models')
         torch.save(best_model.state_dict(), 'models/' + model_param + '.pt')
     model_name = model_param[:-1] if folds < 9 else model_param[:-2]
-    scorer_final = scorer.Scorer('outputs/', model_name, folds=folds)
+    args.outputs_path = 'outputs/'
+    scorer_final = scorer.Scorer(args)
     scorer_final.score()
 
 
