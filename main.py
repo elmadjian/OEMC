@@ -11,6 +11,7 @@ import random
 import scorer
 import argparse
 import time
+import copy
 
 
 def train(model, optimizer, x, y):
@@ -137,7 +138,7 @@ def get_optimizer(args, model, learning_rate):
 def get_best_model(model, best_model, score, best_score):
     if score > best_score:
         print('>>> updating best model...')
-        return model, score
+        return copy.deepcopy(model), score
     return best_model, best_score
 
 

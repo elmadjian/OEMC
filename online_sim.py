@@ -42,7 +42,7 @@ class OnlineSimulator():
                     gt  = int(teY[i])
                     self._update_conf_matrix(pred, gt)
                     self._show_progress(i, teX, times)
-            print(f'\nFOLD {fold_i}\n------------------')
+            print(f'\nFOLD {fold_i+1}\n------------------')
             self.scorer._f_score_calc(self.conf_matrix, self.conf_total)
             self.times += times
             self._show_times(self.times)
@@ -66,9 +66,9 @@ class OnlineSimulator():
 
 
     def _show_times(self, times):
-        print('Median time:', np.median(times))
-        print('Mean time:', np.mean(times))
-        print("Standard deviation:", np.std(times))
+        print('Median time: {:1.4f} ms'.format(np.median(times)*1000))
+        print('Mean time: {:1.4f} ms'.format(np.mean(times)*1000))
+        print('Standard deviation: {:1.4f} ms'.format(np.std(times)*1000))
 
 
     def _load_model(self, features, fold):
@@ -94,6 +94,8 @@ class OnlineSimulator():
             sample = torch.from_numpy(sample).float()
             sample = torch.autograd.Variable(sample, requires_grad=False).cuda()
             pred   = model(sample)
+            print(pred.data.max(1,keepdim=True))
+            input()
             pred   = pred.data.max(1, keepdim=True)[1]
             return pred
 
