@@ -116,12 +116,9 @@ def get_model(args, layers, features):
     if args.model == 'tcn':
         model = TCN(args.timesteps, 4, layers,
                     kernel_size=args.kernel_size, dropout=args.dropout)
-    elif args.model == 'tcn_nc':
-        model = TCN_NC(args.timesteps, 4, layers, 
-                    kernel_size=args.kernel_size, dropout=args.dropout)
     elif args.model == 'cnn_blstm':
-        model = CNN_BLSTM(args.timesteps, 4, args.kernel_size, args.dropout,
-                          features, blstm_layers=2)
+        model = CNN_LSTM(args.timesteps, 4, args.kernel_size, args.dropout,
+                          features, lstm_layers=2, bidirectional=True)
     elif args.model == 'cnn_lstm':
         model = CNN_LSTM(args.timesteps, 4, args.kernel_size, args.dropout,
                          features, lstm_layers=2)
@@ -249,7 +246,7 @@ if __name__=="__main__":
     argparser.add_argument('-m',
                            '--model',
                             required=True,
-                            choices=['tcn', 'tcn_nc', 'cnn_blstm', 'cnn_lstm'])
+                            choices=['tcn', 'cnn_blstm', 'cnn_lstm'])
     argparser.add_argument('-b',
                            '--batch_size',
                            required=False,

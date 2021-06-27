@@ -8,7 +8,8 @@ import numpy as np
 class CNN_LSTM(nn.Module):
 
     def __init__(self, input_size, output_size, kernel_size, dropout, 
-                 features, lstm_layers, conv_filters=(32, 16, 8)):
+                 features, lstm_layers, conv_filters=(32, 16, 8), 
+                 bidirectional=False):
         super(CNN_LSTM, self).__init__()
         self.conv_filters = conv_filters
         self.lstm_layers = lstm_layers
@@ -24,10 +25,13 @@ class CNN_LSTM(nn.Module):
             conv_layers += [nn.ReLU()]        
         self.conv_layers = nn.Sequential(*conv_layers)
         self.flatten = TimeDistributed(nn.Flatten(), batch_first=True)
-        self.lstm = nn.LSTM(input_size=features, bidirectional=False,
-                            hidden_size=32, num_layers=lstm_layers, 
+        hidden_state = 32
+        if bidirectional:
+            hidden_state = 16
+        self.lstm = nn.LSTM(input_size=features, bidirectional=bidirectional,
+                            hidden_size=hidden_state, num_layers=lstm_layers, 
                             batch_first=True)
-        linear = nn.Linear(conv_filters[-1], output_size)
+        linear = nn.Linear(32, output_size)
         linear.weight.data.normal_(0, 0.01)
         self.output = TimeDistributed(linear, batch_first=True)
 
@@ -38,7 +42,7 @@ class CNN_LSTM(nn.Module):
             out = layer(out)
         out = self.flatten(out)
         out,_ = self.lstm(out)
-        out = self.output(out[:,:,-1])
+        out = self.output(out[:,-1,:])
         out = F.log_softmax(out, dim=1)
         return out
 

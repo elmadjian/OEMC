@@ -76,9 +76,13 @@ class OnlineSimulator():
         if self.args.model == 'tcn':
             model = TCN(self.args.timesteps, 4, [30]*4,
                 kernel_size=self.args.kernel_size, dropout=self.args.dropout)
-        else:
+        elif self.args.model == 'cnn_lstm':
             model = CNN_LSTM(self.args.timesteps, 4, self.args.kernel_size, 
                  self.args.dropout, features, self.args.lstm_layers)
+        else:
+            model = CNN_LSTM(self.args.timesteps, 4, self.args.kernel_size,
+                 self.args.dropout, features, self.args.lstm_layers,
+                 bidirectional=True)
         model.load_state_dict(torch.load(path))
         model.cuda()
         model.eval()
@@ -95,8 +99,8 @@ class OnlineSimulator():
     
     def _fill_up_tensor(self, X, i):
         t = self.args.timesteps
-        batch = np.array([X[i-t:i]])
-        return torch.from_numpy(batch).float().cuda()
+        sample = np.array([X[i-t:i]])
+        return torch.from_numpy(sample).float().cuda()
 
 
     def _convert_label(self, target):
