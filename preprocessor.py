@@ -250,13 +250,12 @@ class Preprocessor():
 
 
     def extract_features(self, x, y, conf, targets, windows, latency):
-        tr_tensor  = np.zeros((len(x), 2*len(windows))) #num X sets of features
-        tgt_tensor = np.zeros(len(targets),)
         ini = int(np.ceil(self.frequency * self.length))
+        tr_tensor  = np.zeros((len(x)-ini, 2*len(windows))) #num X sets of features
+        tgt_tensor = np.zeros(len(targets)-ini,)
         for i in range(ini, len(x)):
             for j in range(len(windows)):
-                w = windows[j]
-                start_pos, end_pos = self._get_start_end(i,w)
+                start_pos, end_pos = self._get_start_end(i,windows[j])
                 if start_pos == end_pos:
                     continue
                 diff_x = x[end_pos] - x[start_pos]
@@ -264,10 +263,10 @@ class Preprocessor():
                 ampl   = np.math.sqrt(diff_x**2 + diff_y**2)
                 time   = ((end_pos - start_pos)*latency)/1000
                 #saving speed
-                tr_tensor[i][j] = ampl/time
+                tr_tensor[i-ini][j] = ampl/time
                 #saving direction % window
-                tr_tensor[i][j+len(windows)] = np.math.atan2(diff_y, diff_x)
-            tgt_tensor[i] = self._convert_label(targets[i+self.offset])
+                tr_tensor[i-ini][j+len(windows)] = np.math.atan2(diff_y, diff_x)
+            tgt_tensor[i-ini] = self._convert_label(targets[i+self.offset])
         return tr_tensor, tgt_tensor
 
 
@@ -285,8 +284,8 @@ class Preprocessor():
     def create_batches(self, X, Y, start, end, timesteps, randomize=False):
         if timesteps == 1:
             return self._create_batches_single(X, Y, start, end, randomize)
-        b_Y = Y[start+timesteps-1:end-1]
-        b_X = np.array([X[i:i+timesteps,:] for i in range(start, end-timesteps)])
+        b_Y = Y[start-1:end-1]
+        b_X = np.array([X[i-timesteps:i,:] for i in range(start, end)])
         if randomize:
             shuffler = np.random.permutation(len(b_Y))
             b_X = b_X[shuffler]
@@ -320,7 +319,7 @@ class Preprocessor():
 
 if __name__=='__main__':
     preprocessor = Preprocessor(window_length=1, offset=0, 
-                                stride=9, frequency=250)
+                                stride=8, frequency=200)
     #preprocessor.process_folder('data_gazecom','cached/gazecom')
     preprocessor.process_folder('data_hmr', 'cached/hmr')
 

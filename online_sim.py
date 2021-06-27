@@ -13,9 +13,9 @@ class OnlineSimulator():
 
     def __init__(self, args):
         self.args = args
-        freq = 200 if args.dataset == 'hmr' else 250
+        self.freq = 200 if args.dataset == 'hmr' else 250
         self.pr = pr.Preprocessor(window_length=1, 
-                                  stride=args.stride, frequency=freq, offset=0)
+                                  stride=args.strides, frequency=self.freq, offset=0)
         self._check_folder_exists(args.dataset)
         self.conf_matrix = {i:{'tp':0,'tn':0,'fp':0,'fn':0} for i in range(4)}
         self.conf_total = {'tp':0, 'fp':0, 'fn':0}
@@ -30,12 +30,11 @@ class OnlineSimulator():
         for fold_i in range(self.args.folds):
             _, _, teX, teY = next(fold)
             features = teX.shape[1]
-            window = np.zeros((self.args.timesteps, features))
             model = self._load_model(features, fold_i+1)
             times = []
-            for i, inp in enumerate(teX):
-                window = self._fill_up_tensor(inp, window)
-                if i > args.timesteps:
+            for i in range(len(teX)):
+                if i >= self.args.timesteps:
+                    window = self._fill_up_tensor(teX, i)
                     init_time = time.time()
                     pred = self._predict(model, window).cpu().numpy()[0][0]
                     times.append(time.time() - init_time)
@@ -56,14 +55,12 @@ class OnlineSimulator():
                 self.pr.process_folder_parallel('data_gazecom','cached/gazecom', workers=12)
 
 
-
     def _show_progress(self, i, data, times):
         if i % 1000 == 0:
             porc = i/len(data) * 100
             t = np.mean(times) * 1000
             print("Progress: {:2.3f}%  Avg time: {:1.4f}ms".format(porc,t), end='\r', flush=True)
                 
-
 
     def _show_times(self, times):
         print('Median time: {:1.4f} ms'.format(np.median(times)*1000))
@@ -75,13 +72,13 @@ class OnlineSimulator():
         filename = f"{self.args.model}_model_{self.args.dataset}_BATCH-"
         filename += f"{self.args.batch_size}_EPOCHS-{self.args.epochs}_FOLD-"
         filename += f"{fold}.pt"
+        path = os.path.join('models', filename)
         if self.args.model == 'tcn':
             model = TCN(self.args.timesteps, 4, [30]*4,
                 kernel_size=self.args.kernel_size, dropout=self.args.dropout)
         else:
-            model = CNN_LSTM(self.args.timesteps, 4, self.args.kernel_size,
-                self.args.dropout, features, self.args.cnn_layers)
-        path = os.path.join('final_models', filename)
+            model = CNN_LSTM(self.args.timesteps, 4, self.args.kernel_size, 
+                 self.args.dropout, features, self.args.lstm_layers)
         model.load_state_dict(torch.load(path))
         model.cuda()
         model.eval()
@@ -90,20 +87,16 @@ class OnlineSimulator():
 
     def _predict(self, model, sample):
         with torch.no_grad():
-            sample = np.array([sample])
-            sample = torch.from_numpy(sample).float()
-            sample = torch.autograd.Variable(sample, requires_grad=False).cuda()
-            pred   = model(sample)
-            print(pred.data.max(1,keepdim=True))
-            input()
-            pred   = pred.data.max(1, keepdim=True)[1]
+            sample = torch.autograd.Variable(sample, requires_grad=False)
+            pred = model(sample)
+            pred = pred.data.max(1, keepdim=True)[1]
             return pred
 
     
-    def _fill_up_tensor(self, sample, window):
-        window = np.roll(window, -1, axis=0)
-        window[-1,:] = sample
-        return window
+    def _fill_up_tensor(self, X, i):
+        t = self.args.timesteps
+        batch = np.array([X[i-t:i]])
+        return torch.from_numpy(batch).float().cuda()
 
 
     def _convert_label(self, target):
@@ -165,17 +158,17 @@ if __name__=='__main__':
                         required=False,
                         default=0.25,
                         type=float)
-    parser.add_argument('--cnn_layers',
+    parser.add_argument('--lstm_layers',
                         required=False,
                         default=2,
                         type=int)
     parser.add_argument('-f',
                         '--folds',
                         required=True,
-                        default=10,
+                        default=5,
                         type=int)
     parser.add_argument('-s',
-                        '--stride',
+                        '--strides',
                         required=False,
                         default=8,
                         type=int)

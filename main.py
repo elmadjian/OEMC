@@ -62,14 +62,16 @@ def save_test_output(model_path, preds, labels):
     np.savez(output_path, pred=preds.numpy(), gt=labels.numpy())
 
 
-def predict(model, num_test_batches, batch_size, trX_val, trY_val, timesteps, pproc):
+def predict(model, num_test_batches, batch_size, X_val, Y_val, timesteps, pproc):
     total_pred = torch.Tensor([]).cuda()
     total_label = torch.Tensor([]).cuda()
     test_loss = 0
-    test_size = len(trY_val)
+    test_size = len(Y_val)
     for k in range(num_test_batches):
         start, end = k*batch_size, (k+1)*batch_size
-        X,Y = pproc.create_batches(trX_val, trY_val, start, end, timesteps)
+        if start == 0:
+            start = timesteps
+        X,Y = pproc.create_batches(X_val, Y_val, start, end, timesteps)
         preds, labels, loss = test(model, X, Y)
         test_loss += loss
         total_pred = torch.cat([total_pred, preds], dim=0)
@@ -188,12 +190,14 @@ def main(args):
             cost = 0
             for k in range(num_batches):
                 start, end = k * batch_size, (k+1) * batch_size
+                if start == 0:
+                    start = timesteps
                 trainX, trainY = pproc.create_batches(trX, trY, start, end, timesteps, rand) 
                 cost += train(model, optimizer, trainX, trainY)
                 steps += 1
                 if k > 0 and (k % (num_batches//10) == 0 or k == num_batches-1):
                     print('Train Epoch: {:2} [{}/{} ({:.0f}%)]  Loss: {:.5f}  Steps: {}'.format(
-                        epoch, start, train_size,
+                        epoch, end, train_size,
                         100*k/num_batches, cost/num_batches, steps 
                     ), end='\r')
             t_loss, preds, labels = predict(model, num_test_batches, batch_size, 
@@ -211,18 +215,24 @@ def main(args):
         
         if not args.save_best:
             best_model = model
-        print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
-        num_test_batches = len(teY)//batch_size
-        t_loss, preds, labels = predict(best_model, num_test_batches, batch_size, 
-                                        teX, teY, timesteps, pproc)
-        print_scores(preds, labels, t_loss, 'Test')
+
+        #saving model and testing saved params
         model_param = "{}_model_{}_BATCH-{}_EPOCHS-{}_FOLD-{}".format(
             args.model, dataset, batch_size, epochs, fold_i+1
         )
-        save_test_output(model_param, preds, labels)
         if not os.path.exists('models'):
             os.makedirs('models')
         torch.save(best_model.state_dict(), 'models/' + model_param + '.pt')
+        m = get_model(args, channel_sizes, features)
+        m.load_state_dict(torch.load('models/' + model_param + '.pt'))
+
+        print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
+        num_test_batches = len(teY)//batch_size
+        t_loss, preds, labels = predict(m, num_test_batches, batch_size, 
+                                        teX, teY, timesteps, pproc)
+        print_scores(preds, labels, t_loss, 'Test')
+        save_test_output(model_param, preds, labels)
+
     model_name = model_param[:-1] if folds < 9 else model_param[:-2]
     args.outputs_path = 'outputs/'
     scorer_final = scorer.Scorer(args)
@@ -290,7 +300,7 @@ if __name__=="__main__":
                            required=False,
                            action='store_true')
     argparser.add_argument('--save_best',
-			   required=False,
+			               required=False,
                            action='store_true')
     args = argparser.parse_args()
     main(args)
