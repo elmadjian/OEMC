@@ -25,7 +25,6 @@ class TemporalBlock(nn.Module):
         self.chomp1 = Chomp1d(padding)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(dropout)
-        #self.batchnorm = nn.BatchNorm1d(30)
 
         self.conv2 = weight_norm(nn.Conv1d(n_outputs, n_outputs, kernel_size,
                                            stride=stride, padding=padding, dilation=dilation))

@@ -21,6 +21,7 @@ class OnlineSimulator():
         self.conf_total = {'tp':0, 'fp':0, 'fn':0}
         self.scorer = scorer.Scorer(args)
         self.times = []
+        torch.set_printoptions(sci_mode=False)
 
 
     def simulate(self):
@@ -72,7 +73,7 @@ class OnlineSimulator():
         filename = f"{self.args.model}_model_{self.args.dataset}_BATCH-"
         filename += f"{self.args.batch_size}_EPOCHS-{self.args.epochs}_FOLD-"
         filename += f"{fold}.pt"
-        path = os.path.join('models', filename)
+        path = os.path.join('final_models', filename)
         if self.args.model == 'tcn':
             model = TCN(self.args.timesteps, 4, [30]*4,
                 kernel_size=self.args.kernel_size, dropout=self.args.dropout)
@@ -93,6 +94,10 @@ class OnlineSimulator():
         with torch.no_grad():
             sample = torch.autograd.Variable(sample, requires_grad=False)
             pred = model(sample)
+            layer = torch.nn.Softmax(dim=1)
+            pred = layer(pred)
+            print(pred)
+            input()
             pred = pred.data.max(1, keepdim=True)[1]
             return pred
 
@@ -176,7 +181,7 @@ if __name__=='__main__':
                         required=False,
                         default=8,
                         type=int)
-    parser.add_argument('--outputs_path',
+    parser.add_argument('--out',
                         required=False,
                         default='final_outputs')
     args = parser.parse_args()

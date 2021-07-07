@@ -4,39 +4,35 @@ import glob
 import os
 import re
 import argparse
+from sklearn import metrics
+from sklearn.preprocessing import label_binarize
+import matplotlib.pyplot as plt
+
 
 class Scorer():
     
     def __init__(self, args):#base_path=None, model_params=None, folds=None):
-        self.base_path = args.outputs_path
+        self.base_path = args.out
         self.dataset = args.dataset
         self.model = f"{args.model}_model_{args.dataset}_BATCH-{args.batch_size}"
         self.model += f"_EPOCHS-{args.epochs}_FOLD-"
         self.folds = args.folds
-        self.conf_matrix = [{'tp':0,'tn':0,'fp':0,'fn':0} for i in range(4)]
-        self.event_matrix = [{'tp':0, 'tn':0, 'fp':0, 'fn':0} for i in range(4)]
-        self.conf_total = {'tp':0, 'fp':0, 'fn':0}
-        self.event_total = {'tp':0, 'fp':0, 'fn':0}
-        #self.individual = {}
-
-
-    def _reset_scores(self):
-        self.conf_matrix = [{'tp':0,'tn':0,'fp':0,'fn':0} for i in range(4)]
-        self.event_matrix = [{'tp':0, 'tn':0, 'fp':0, 'fn':0} for i in range(4)]
+        self.sample_preds = []
+        self.sample_gt = []
+        self.event_preds = []
+        self.event_gt = []
 
 
     def score(self):
         for fold in range(self.folds):
             path = os.path.join(self.base_path, self.model + str(fold+1) + '.npz')
             data = np.load(path, mmap_mode='r')
-            preds = data['pred']
-            gt = data['gt']
-            self._count_sample(preds, gt)
-            self._count_event(preds, gt)
-        self._show_results_sample()
-        self._show_results_event()
+            self.sample_preds += data['pred'].tolist()
+            self.sample_gt += data['gt'].tolist()
+        self._count_event(self.sample_preds, self.sample_gt)
+        self.print_results()
 
-    
+
     def score_ibdt(self):
         pattern = os.path.join(self.base_path, '**/*.csv')
         files = glob.glob(pattern, recursive=True)
@@ -44,21 +40,13 @@ class Scorer():
         gts   = [name for name in files if 'reviewed.csv' in name]
         users = self._index_users(preds, gts, self.dataset)
         for user in users.keys():
-            #self.individual[user] = {'FIX':0, 'SAC':0, 'SP':0}
             self._get_score_user(users[user], user)
-            #print(self.individual[user])
-        # fix, sac, sp = 0,0,0
-        # user_tot = len(self.individual.keys())
-        # for user in self.individual.keys():
-        #     fix += self.individual[user]['FIX']
-        #     sac += self.individual[user]['SAC']
-        #     sp  += self.individual[user]['SP']
-        # print('FIX F1:', fix/user_tot)
-        # print('SAC F1:', sac/user_tot)
-        # print('SP F1:', sp/user_tot)
-        self._show_results_sample()
-        self._show_results_event()
-        
+        self.sample_preds = np.array(self.sample_preds)
+        self.sample_gt = np.array(self.sample_gt)
+        self.sample_preds = self.sample_preds[self.sample_preds != 3]
+        self.sample_gt = self.sample_gt[self.sample_gt != 3]
+        self._count_event(self.sample_preds, self.sample_gt)
+        self.print_results(ibdt=True)        
         
 
     def _get_score_user(self, user, key):
@@ -66,15 +54,6 @@ class Scorer():
             pred = user[video]['pred']
             gt   = user[video]['gt']
             self.score_csv(pred, gt)
-            #self._f_score_calc_individual(self.conf_matrix, key)
-            #self._reset_scores()
-        # user_tot = len(user.keys())
-        # self.individual[key]['FIX'] /= user_tot
-        # self.individual[key]['SAC'] /= user_tot
-        # self.individual[key]['SP'] /= user_tot
-        #self._reset_scores()
-        
-
 
 
     def _index_users(self, preds, gts, dataset):
@@ -101,109 +80,26 @@ class Scorer():
         gt_df  = pd.read_csv(ground_truth, names=['i', 'pattern', 'timestamp'])
         preds  = out_df['pattern'].tolist()
         gt     = gt_df['pattern'].tolist()
-        self._count_sample(preds, gt)       
-        self._count_event(preds, gt)
+        self.sample_preds += preds
+        self.sample_gt += gt      
 
 
-    def _show_results_sample(self):
-        print("\n>>> Results on SAMPLE-LEVEL:")
-        self._f_score_calc(self.conf_matrix, self.conf_total)
+    def print_results(self, ibdt=False):
+        target_names = ['Fixations', 'Saccades', 'Pursuits', 'Noise/Blink']
+        if ibdt:
+            target_names = target_names[:-1]
+        print('SAMPLE-LEVEL metrics\n===================')
+        print(metrics.classification_report(self.sample_gt, self.sample_preds, 
+                                        target_names=target_names, digits=4))
+        print('EVENT-LEVEL metrics\n===================')
+        print(metrics.classification_report(self.event_gt, self.event_preds,
+                                        target_names=target_names, digits=4))
+     
 
-
-    def _show_results_event(self):
-        print("\n>>> Results on EVENT-LEVEL:")
-        self._f_score_calc(self.event_matrix, self.event_total)
-
-
-    def _f_score_calc_individual(self, matrix, user):
-        for patt in range(len(matrix)):
-            tp = matrix[patt]['tp']
-            fp = matrix[patt]['fp']
-            fn = matrix[patt]['fn']
-            precision = 0
-            if tp+fp > 0:
-                precision = tp/(tp+fp)
-            recall = 0
-            if tp + fn > 0:
-                recall = tp/(tp+fn)
-            name = ""
-            if patt == 0:
-                name = 'FIX'
-            elif patt == 1:
-                name = 'SAC'
-            elif patt == 2:
-                name = 'SP'
-            else:
-                return
-            fscore = 0
-            if precision * recall != 0:
-                fscore = 2*(precision * recall) / (precision + recall)
-            self.individual[user][name] += fscore
-
-
-    def _f_score_calc(self, matrix, total):
-        for patt in range(len(matrix)):
-            tp = matrix[patt]['tp']
-            fp = matrix[patt]['fp']
-            fn = matrix[patt]['fn']
-            total['tp'] += tp
-            total['fp'] += fp
-            total['fn'] += fn
-            precision, recall = 0, 0
-            if tp + fp > 0:
-                precision = tp/(tp+fp)
-            if tp + fn > 0:
-                recall = tp/(tp+fn)
-            self._print_pattern(patt, precision, recall)
-        precision, recall = 0, 0
-        tp = total['tp']
-        fp = total['fp']
-        fn = total['fn']
-        if tp + fp > 0:
-            precision = tp/(tp + fp)
-        if tp + fn > 0:
-            recall = tp/(tp + fn)
-        self._print_pattern('TOTAL', precision, recall)
-
-
-    def _print_pattern(self, patt, precision, recall):
-        pattern = ""
-        if patt == 0:
-            pattern = "Fixation"
-        elif patt == 1:
-            pattern = "Saccade"
-        elif patt == 2:
-            pattern = "Smooth Pursuit"
-        elif patt == 3:
-            pattern = "Blink"
-        else:
-            pattern = "Total"
-        fscore = 0
-        if precision * recall != 0:
-            fscore = 2*(precision * recall) / (precision + recall)
-        print(f'{pattern:14} -> Precision: {precision:.4f}, Recall: {recall:.4f}, F-score: {fscore:.4f}')
-
-
-    def _count_sample(self, preds, gt):
-        for i in range(len(preds)):
-            p, g = int(preds[i]), int(gt[i])
-            vals = {0,1,2,3}
-            if p == g:
-                self.conf_matrix[p]['tp'] += 1
-                vals.remove(p)
-            else:
-                self.conf_matrix[p]['fp'] += 1
-                self.conf_matrix[g]['fn'] += 1
-                vals.remove(p)
-                vals.remove(g)
-            for val in vals:
-                self.conf_matrix[val]['tn'] += 1
-
-    
-    def _count_event(self, preds, gt, iou=0.65):
+  
+    def _count_event(self, preds, gt):
         i = 0
         while i < len(gt):
-            patt = {0:0,1:0,2:0,3:0}
             g_0 = g_n = int(gt[i])
             ini, end = i, i
             while g_0 == g_n and i < len(gt):
@@ -213,19 +109,9 @@ class Scorer():
             if ini == end:
                 i += 1
                 continue
-            event = np.array(preds[ini:end])
-            for p in patt.keys():
-                patt[p] = np.count_nonzero(event==p)
-                if patt[p]/(end-ini) > iou:
-                    if p == g_0:
-                        self.event_matrix[p]['tp'] += 1
-                    else:
-                        self.event_matrix[p]['fp'] += 1
-                else:
-                    if p == g_0:
-                        self.event_matrix[p]['fn'] += 1
-                    else:
-                        self.event_matrix[p]['tn'] += 1
+            pred_event = np.array(preds[ini:end], dtype=int)
+            self.event_preds.append(np.bincount(pred_event).argmax())
+            self.event_gt.append(g_0)
 
 
 
@@ -258,7 +144,7 @@ if __name__=="__main__":
                         default=5,
                         required=False,
                         type=int)
-    parser.add_argument('--outputs_path',
+    parser.add_argument('--out',
                         default='outputs/',
                         required=False)
     parser.add_argument('--ibdt',
