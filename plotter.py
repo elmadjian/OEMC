@@ -7,6 +7,7 @@ import time
 import argparse
 import os
 from sklearn.metrics import roc_curve, auc
+from sklearn import metrics
 from plotly import graph_objects as go
 
 
@@ -15,17 +16,21 @@ class Plotter():
     def __init__(self, args):
         self.args = args
         self.freq = 200 if args.dataset == 'hmr' else 250
-        self.pr = preprocessor.Preprocessor(window_length=1,offset=0,
+        self.pr = preprocessor.Preprocessor(window_length=1,offset=args.offset,
                              stride=args.strides,frequency=self.freq)
         torch.set_printoptions(sci_mode=False)
         self.n_classes = 4
         self._check_folder_exists(args.dataset)
 
 
-    def _load_model(self, model_name, batch_size, features, fold):
+    def _get_model_path(self, model_name, batch_size, fold):
         filename = f"{model_name}_model_{self.args.dataset}_BATCH-"
-        filename += f"{batch_size}_EPOCHS-{self.args.epochs}_FOLD-"
-        filename += f"{fold}.pt"
+        filename += f"{batch_size}_EPOCHS-{self.args.epochs}_FOLD-{fold}"
+        return filename
+
+
+    def _load_model(self, model_name, batch_size, features, fold):
+        filename = self._get_model_path(model_name, batch_size, fold) + '.pt'
         path = os.path.join(self.args.mod, filename)
         if model_name == 'tcn':
             model = TCN(self.args.timesteps, 4, [30]*4,
@@ -57,7 +62,7 @@ class Plotter():
     def predict(self, model, X_val, Y_val):
         total_pred = np.empty((0, self.n_classes), dtype=float)
         total_label = np.empty((0,), dtype=float)
-        b_size = 20000
+        b_size = 10000
         num_test_batches = len(Y_val)//b_size
         for k in range(num_test_batches):
             start, end = k*b_size, (k+1)*b_size
@@ -83,6 +88,7 @@ class Plotter():
             _, _, teX, teY = next(fold)
             features = teX.shape[1]
             model = self._load_model(model_name, batch_size, features, fold_i+1)
+            print('>>> Performing predictions...')
             preds, labels = self.predict(model, teX, teY)
             pred = np.append(pred, preds, axis=0)
             label = np.concatenate((label, labels))
@@ -109,6 +115,8 @@ class Plotter():
                 line=dict(dash='dash', color='gray')))
         fig = go.Figure(plots)
         fig.update_layout(
+            autosize=False,
+            width=1000,height=800,
             xaxis_title='False positive rate',
             yaxis_title='True positive rate',
             title=f'ROC curves on {self.args.dataset} dataset',
@@ -120,6 +128,85 @@ class Plotter():
         fig.update_yaxes(range=[0,1.02])
         fig.write_image(f'fig_ROC_AUC_{self.args.dataset}.png')
 
+
+    def _count_event(self, preds, gt):
+        i = 0
+        event_preds, event_gt = [], []
+        while i < len(gt):
+            g_0 = g_n = int(gt[i])
+            ini, end = i, i
+            while g_0 == g_n and i < len(gt):
+                g_n = int(gt[i])
+                end = i
+                i += 1
+            if ini == end:
+                i += 1
+                continue
+            pred_event = np.array(preds[ini:end], dtype=int)
+            event_preds.append(np.bincount(pred_event).argmax())
+            event_gt.append(g_0)
+        return event_gt, event_preds
+
+
+    def score(self, model_name, batch_size, path_param):
+        sample_preds, sample_gt = [],[]
+        for fold in range(self.args.folds):
+            path = self._get_model_path(model_name, batch_size, fold+1) + '.npz'
+            path = os.path.join(self.args.out, path_param, path)
+            data = np.load(path, mmap_mode='r')
+            sample_preds += data['pred'].tolist()
+            sample_gt += data['gt'].tolist()
+        event_gt, event_preds = self._count_event(sample_preds, sample_gt)
+        target_names = ['Fixations', 'Saccades', 'Pursuits', 'Noise/Blink']
+        sample_report = metrics.classification_report(sample_gt, sample_preds, 
+                        target_names=target_names, digits=3, output_dict=True)
+        event_report = metrics.classification_report(event_gt, event_preds, 
+                        target_names=target_names, digits=3, output_dict=True)
+        return sample_report, event_report
+    
+
+    def plot_look_ahead(self, sample_scores, event_scores, offsets):
+        color = ['blue', 'red', 'green']
+        plots = []
+        for i, model in enumerate(sample_scores.keys()):
+            plots.append(go.Scatter(x=offsets, y=sample_scores[model],
+                         name=f'{model} (sample-level)', line=dict(color=color[i])))
+            plots.append(go.Scatter(x=offsets, y=event_scores[model],
+                    name=f'{model} (event-level)', line=dict(color=color[i], dash='dash')))   
+        fig = go.Figure(plots)
+        fig.update_layout(
+            autosize=False,
+            width=1000,height=800,
+            xaxis_title='Look-ahead (ms)',
+            yaxis_title='F-score (%)',
+            title=f'Look-ahead F-scores for {self.args.dataset} dataset',
+            font = dict(size=16),
+            xaxis = dict(tickmode='array', tickvals=offsets),
+            title_x=0.5
+        )
+        fig.write_image(f'fig_look_ahead_{self.args.dataset}.png')
+
+    
+    def plot_timesteps(self, sample_scores, event_scores, timesteps):
+        color = ['blue', 'red', 'green']
+        plots = []
+        for i, model in enumerate(sample_scores.keys()):
+            plots.append(go.Scatter(x=timesteps, y=sample_scores[model],
+                         name=f'{model} (sample level)', line=dict(color=color[i])))
+            plots.append(go.Scatter(x=timesteps, y=event_scores[model],
+                    name=f'{model} (event level)', line=dict(color=color[i], dash='dash')))   
+        fig = go.Figure(plots)
+        fig.update_layout(
+            autosize=False,
+            width=1000,height=800,
+            xaxis_title='Timesteps (into the past)',
+            yaxis_title='F-score (%)',
+            title=f'F-scores with different timesteps for {self.args.dataset} dataset',
+            font = dict(size=16),
+            xaxis = dict(tickmode='array', tickvals=timesteps),
+            title_x=0.5
+        )
+        fig.write_image(f'fig_timesteps_{self.args.dataset}.png')
                 
             
 
@@ -169,6 +256,10 @@ if __name__=='__main__':
                         required=False,
                         default=8,
                         type=int)
+    parser.add_argument('-o',
+                        '--offset',
+                        required=False,
+                        default=0)
     parser.add_argument('--out',
                         help='model outputs for all folds',
                         required=False,
@@ -180,29 +271,53 @@ if __name__=='__main__':
 
     args = parser.parse_args()
     pltr = Plotter(args)
-    tpr, fpr, roc_auc = {},{},{}
-    for i, model_name in enumerate(args.models):
-        fpr_, tpr_, roc_auc_ = pltr.calculate_roc_auc(model_name, args.batch_size[i])
-        fpr[model_name] = fpr_
-        tpr[model_name] = tpr_
-        roc_auc[model_name] = roc_auc_
-    pltr.plot_roc_auc(fpr, tpr, roc_auc)
-    # plt.figure()
-    # lw = 2
-    # #color=['blue', 'red', 'orange', 'green']
-    # #for i in range(4):
-    # #    plt.plot(fpr[i], tpr[i], color=color[i],
-    # #            lw=lw, label='ROC curve (area = %0.2f)' % roc_auc[i])
-    # plt.plot(fpr, tpr, color='orange', lw=lw,
-    #     label='ROC curve (area = %0.2f)' % roc_auc)
-    # plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    # plt.xlim([-0.02, 1.0])
-    # plt.ylim([0.0, 1.02])
-    # plt.xlabel('False Positive Rate')
-    # plt.ylabel('True Positive Rate')
-    # plt.title('Receiver operating characteristic example')
-    # plt.legend(loc="lower right")
-    # plt.savefig(f'{args.model}_{args.dataset}.png')
+
+    #=========== ROC CURVES
+    # tpr, fpr, roc_auc = {},{},{}
+    # for i, model_name in enumerate(args.models):
+    #     fpr_, tpr_, roc_auc_ = pltr.calculate_roc_auc(model_name, args.batch_size[i])
+    #     fpr[model_name] = fpr_
+    #     tpr[model_name] = tpr_
+    #     roc_auc[model_name] = roc_auc_
+    # pltr.plot_roc_auc(fpr, tpr, roc_auc)
+
+
+    #============ LOOK-AHEAD
+    # offsets = [0, -20,-40,-60,-80]
+    # samp_scores = {m:[] for m in args.models}
+    # evt_scores = {m:[] for m in args.models}
+    # for offset in offsets:
+    #     args.offset = offset
+    #     pltr = Plotter(args)
+    #     print('>>> offset:', offset)
+    #     for i, model_name in enumerate(args.models):
+    #         path_param = f'o_{offset}ms'
+    #         sample, event = pltr.score(model_name, args.batch_size[i], path_param)
+    #         samp_scores[model_name].append(sample['macro avg']['f1-score']*100)
+    #         evt_scores[model_name].append(event['macro avg']['f1-score']*100)
+    # pltr = Plotter(args)
+    # pltr.plot_look_ahead(samp_scores, evt_scores, offsets)
+
+
+    #============ TIMESTEPS
+    timesteps = ['1', '20', '50', '100', '200']
+    samp_scores = {m:[] for m in args.models}
+    evt_scores = {m:[] for m in args.models}
+    if args.dataset == 'gazecom':
+        timesteps = ['1', '25', '62', '125', '250']
+    for t in timesteps:
+        args.timesteps = t
+        pltr = Plotter(args)
+        print('>>> timesteps:', t)
+        for i, model_name in enumerate(args.models):
+            path_param = 't' + args.timesteps
+            sample, event = pltr.score(model_name, args.batch_size[i], path_param)
+            samp_scores[model_name].append(sample['macro avg']['f1-score']*100)
+            evt_scores[model_name].append(event['macro avg']['f1-score']*100)
+    pltr = Plotter(args)
+    pltr.plot_timesteps(samp_scores, evt_scores, timesteps)
+
+
 
    
 

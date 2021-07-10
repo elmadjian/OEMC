@@ -5,8 +5,6 @@ import os
 import re
 import argparse
 from sklearn import metrics
-from sklearn.preprocessing import label_binarize
-import matplotlib.pyplot as plt
 
 
 class Scorer():
