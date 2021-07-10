@@ -290,8 +290,11 @@ class Preprocessor():
             shuffler = np.random.permutation(len(b_Y))
             b_X = b_X[shuffler]
             b_Y = b_Y[shuffler]
-        batch_X = torch.from_numpy(b_X).float().cuda()
-        batch_Y = torch.from_numpy(b_Y).long().cuda()
+        batch_X = torch.from_numpy(b_X).float()
+        batch_Y = torch.from_numpy(b_Y).long()
+        if torch.cuda.is_available():
+            batch_X = batch_X.cuda()
+            batch_Y = batch_Y.cuda()
         return batch_X, batch_Y
 
 
@@ -300,8 +303,11 @@ class Preprocessor():
         b_Y = Y[start:end]
         b_X = X[start:end]
         b_X = b_X.reshape(b_X.shape[0],1,b_X.shape[1])
-        batch_X = torch.from_numpy(b_X).float().cuda()
-        batch_Y = torch.from_numpy(b_Y).long().cuda()
+        batch_X = torch.from_numpy(b_X).float()
+        batch_Y = torch.from_numpy(b_Y).long()
+        if torch.cuda.is_available():
+            batch_X = batch_X.cuda()
+            batch_Y = batch_Y.cuda()
         return batch_X, batch_Y
 
 

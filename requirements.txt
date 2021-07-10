@@ -1,3 +1,6 @@
 pandas
 liac-arff
 sklearn
+matplotlib
+plotly
+kaleido

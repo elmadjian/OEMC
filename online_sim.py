@@ -84,8 +84,9 @@ class OnlineSimulator():
             model = CNN_LSTM(self.args.timesteps, 4, self.args.kernel_size,
                  self.args.dropout, features, self.args.lstm_layers,
                  bidirectional=True)
-        model.load_state_dict(torch.load(path))
-        model.cuda()
+        model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        if torch.cuda.is_available():
+            model.cuda()
         model.eval()
         return model
 
@@ -96,8 +97,6 @@ class OnlineSimulator():
             pred = model(sample)
             layer = torch.nn.Softmax(dim=1)
             pred = layer(pred)
-            print(pred)
-            input()
             pred = pred.data.max(1, keepdim=True)[1]
             return pred
 
@@ -105,7 +104,10 @@ class OnlineSimulator():
     def _fill_up_tensor(self, X, i):
         t = self.args.timesteps
         sample = np.array([X[i-t:i]])
-        return torch.from_numpy(sample).float().cuda()
+        sample = torch.from_numpy(sample).float()
+        if torch.cuda.is_available():
+            return sample.cuda()
+        return sample
 
 
     def _convert_label(self, target):
