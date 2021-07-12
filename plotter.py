@@ -300,22 +300,22 @@ if __name__=='__main__':
 
 
     #============ TIMESTEPS
-    timesteps = ['1', '20', '50', '100', '200']
-    samp_scores = {m:[] for m in args.models}
-    evt_scores = {m:[] for m in args.models}
-    if args.dataset == 'gazecom':
-        timesteps = ['1', '25', '62', '125', '250']
-    for t in timesteps:
-        args.timesteps = t
-        pltr = Plotter(args)
-        print('>>> timesteps:', t)
-        for i, model_name in enumerate(args.models):
-            path_param = 't' + args.timesteps
-            sample, event = pltr.score(model_name, args.batch_size[i], path_param)
-            samp_scores[model_name].append(sample['macro avg']['f1-score']*100)
-            evt_scores[model_name].append(event['macro avg']['f1-score']*100)
-    pltr = Plotter(args)
-    pltr.plot_timesteps(samp_scores, evt_scores, timesteps)
+    # timesteps = ['1', '20', '50', '100', '200']
+    # samp_scores = {m:[] for m in args.models}
+    # evt_scores = {m:[] for m in args.models}
+    # if args.dataset == 'gazecom':
+    #     timesteps = ['1', '25', '62', '125', '250']
+    # for t in timesteps:
+    #     args.timesteps = t
+    #     pltr = Plotter(args)
+    #     print('>>> timesteps:', t)
+    #     for i, model_name in enumerate(args.models):
+    #         path_param = 't' + args.timesteps
+    #         sample, event = pltr.score(model_name, args.batch_size[i], path_param)
+    #         samp_scores[model_name].append(sample['macro avg']['f1-score']*100)
+    #         evt_scores[model_name].append(event['macro avg']['f1-score']*100)
+    # pltr = Plotter(args)
+    # pltr.plot_timesteps(samp_scores, evt_scores, timesteps)
 
 
 

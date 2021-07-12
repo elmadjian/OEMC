@@ -24,11 +24,13 @@ class OnlineSimulator():
         torch.set_printoptions(sci_mode=False)
 
 
-    def simulate(self):
+    def simulate(self, n_folds=None):
         fold = self.pr.load_data_k_fold('cached/'+self.pr.append_options(
                                         self.args.dataset), 
                                         folds=self.args.folds)
-        for fold_i in range(self.args.folds):
+        if n_folds is None:
+            n_folds = self.args.folds
+        for fold_i in range(n_folds):
             _, _, teX, teY = next(fold)
             features = teX.shape[1]
             model = self._load_model(features, fold_i+1)
@@ -43,9 +45,10 @@ class OnlineSimulator():
                     self._update_conf_matrix(pred, gt)
                     self._show_progress(i, teX, times)
             print(f'\nFOLD {fold_i+1}\n------------------')
-            self.scorer._f_score_calc(self.conf_matrix, self.conf_total)
+            #self.scorer._f_score_calc(self.conf_matrix, self.conf_total)
             self.times += times
             self._show_times(self.times)
+
 
 
     def _check_folder_exists(self, dataset):
@@ -64,16 +67,22 @@ class OnlineSimulator():
                 
 
     def _show_times(self, times):
-        print('Median time: {:1.4f} ms'.format(np.median(times)*1000))
-        print('Mean time: {:1.4f} ms'.format(np.mean(times)*1000))
-        print('Standard deviation: {:1.4f} ms'.format(np.std(times)*1000))
+        median = np.median(times)*1000
+        mean = np.mean(times)*1000
+        std = np.std(times)*1000
+        csv = f"median,mean,std\n{median},{mean},{std}"
+        print('Median time: {:1.4f} ms'.format(median))
+        print('Mean time: {:1.4f} ms'.format(mean))
+        print('Standard deviation: {:1.4f} ms'.format(std))
+        with open(f'latency_{self.args.model}_{self.args.dataset}.csv', 'w') as f:
+            f.write(csv)
 
 
     def _load_model(self, features, fold):
         filename = f"{self.args.model}_model_{self.args.dataset}_BATCH-"
         filename += f"{self.args.batch_size}_EPOCHS-{self.args.epochs}_FOLD-"
         filename += f"{fold}.pt"
-        path = os.path.join('final_models', filename)
+        path = os.path.join(self.args.mod, filename)
         if self.args.model == 'tcn':
             model = TCN(self.args.timesteps, 4, [30]*4,
                 kernel_size=self.args.kernel_size, dropout=self.args.dropout)
@@ -84,7 +93,7 @@ class OnlineSimulator():
             model = CNN_LSTM(self.args.timesteps, 4, self.args.kernel_size,
                  self.args.dropout, features, self.args.lstm_layers,
                  bidirectional=True)
-        model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(path))#, map_location=torch.device('cpu')))
         if torch.cuda.is_available():
             model.cuda()
         model.eval()
@@ -186,6 +195,9 @@ if __name__=='__main__':
     parser.add_argument('--out',
                         required=False,
                         default='final_outputs')
+    parser.add_argument('--mod',
+                        required=False,
+                        default='final_models')
     args = parser.parse_args()
     online_sim = OnlineSimulator(args)
-    online_sim.simulate()
+    online_sim.simulate(1)
