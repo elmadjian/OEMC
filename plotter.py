@@ -6,10 +6,11 @@ import preprocessor
 import time
 import argparse
 import os
+import glob
 from sklearn.metrics import roc_curve, auc
 from sklearn import metrics
 from plotly import graph_objects as go
-
+import pandas as pd
 
 class Plotter():
 
@@ -207,10 +208,10 @@ class Plotter():
             title_x=0.5
         )
         fig.write_image(f'fig_timesteps_{self.args.dataset}.png')
-                
-            
 
-if __name__=='__main__':
+
+
+def parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m',
                         '--models',
@@ -268,9 +269,13 @@ if __name__=='__main__':
                         help='models folder',
                         required=False,
                         default='final_models')
+    args = parser.parse_args()    
+    return args
+            
 
-    args = parser.parse_args()
-    pltr = Plotter(args)
+if __name__=='__main__':
+    # args = parse()
+    # pltr = Plotter(args)
 
     #=========== ROC CURVES
     # tpr, fpr, roc_auc = {},{},{}
@@ -317,6 +322,41 @@ if __name__=='__main__':
     # pltr = Plotter(args)
     # pltr.plot_timesteps(samp_scores, evt_scores, timesteps)
 
+    #============ LATENCY
+    data = {}
+    for f in glob.glob('CSV/*.csv'):
+        names = f.split('_')
+        model = names[1]
+        dataset = names[2]
+        device = names[4].split('.')[0]
+        if dataset not in data.keys():
+            data[dataset] = {}
+        if model not in data[dataset].keys():
+            data[dataset][model] = {}
+        df = pd.read_csv(f)
+        data[dataset][model][device] = [df.loc[0,'mean'], df.loc[0,'std']]
+    for dataset in data.keys():
+        fig = go.Figure()
+        for model in sorted(list(data[dataset].keys())):
+            means = [data[dataset][model]['gpu'][0], data[dataset][model]['cpu'][0]]
+            stds = [data[dataset][model]['gpu'][1], data[dataset][model]['cpu'][1]] 
+            fig.add_trace(go.Bar(
+                name=model,
+                x=['GPU', 'CPU'], 
+                y=means, error_y=dict(type='data', array=stds)
+            ))
+        fig.update_yaxes(range=[0,2])
+        fig.update_layout(
+            barmode='group',
+            autosize=False,
+            width=1000,height=800,
+            xaxis_title='Operating device',
+            yaxis_title='Latency (ms)',
+            title=f'Mean prediction latency for {dataset} dataset',
+            font = dict(size=16),
+            title_x=0.5
+        )
+        fig.write_image(f'latency_{dataset}.png')
 
 
    
