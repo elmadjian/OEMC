@@ -94,6 +94,7 @@ class OnlineSimulator():
                  self.args.dropout, features, self.args.lstm_layers,
                  bidirectional=True)
         model.load_state_dict(torch.load(path))#, map_location=torch.device('cpu')))
+        self.print_parameters(model)
         if torch.cuda.is_available():
             model.cuda()
         model.eval()
@@ -128,6 +129,15 @@ class OnlineSimulator():
             return 'P'
         if target == 3:
             return 'B'
+
+    
+    def print_parameters(self, model):
+        params = 0
+        for p in model.parameters():
+            if p.requires_grad:
+                params += p.numel()
+        print('>>> Trainable parameters:', params)
+
 
 
     def _update_conf_matrix(self, pred, gt):
