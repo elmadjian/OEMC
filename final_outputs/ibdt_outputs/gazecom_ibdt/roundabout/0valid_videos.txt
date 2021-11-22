@@ -1,0 +1,98 @@
+roundabout - 1: INVÁLIDO
+3216 438 0
+roundabout - 2: OK
+2530 539 681
+roundabout - 3: OK
+2844 399 126
+roundabout - 4: OK
+2781 511 387
+roundabout - 5: INVÁLIDO
+3240 364 0
+roundabout - 6: OK
+2901 561 94
+roundabout - 7: INVÁLIDO
+3077 579 0
+roundabout - 8: OK
+2933 338 40
+roundabout - 9: INVÁLIDO
+3273 320 0
+roundabout - 10: OK
+2627 525 388
+roundabout - 11: OK
+2249 331 461
+roundabout - 12: OK
+1931 313 1418
+roundabout - 13: INVÁLIDO
+3188 538 0
+roundabout - 14: OK
+2903 428 368
+roundabout - 15: OK
+2971 541 147
+roundabout - 16: OK
+2694 430 497
+roundabout - 17: OK
+3062 335 313
+roundabout - 18: INVÁLIDO
+3133 447 0
+roundabout - 19: OK
+2721 406 147
+roundabout - 20: OK
+2556 345 562
+roundabout - 21: OK
+2708 359 483
+roundabout - 22: INVÁLIDO
+2711 850 0
+roundabout - 23: OK
+2515 346 707
+roundabout - 24: OK
+2977 489 105
+roundabout - 25: OK
+2422 464 530
+roundabout - 26: OK
+2137 392 918
+roundabout - 27: OK
+3006 614 119
+roundabout - 28: OK
+2983 375 77
+roundabout - 29: OK
+3086 542 48
+roundabout - 30: OK
+1689 282 1443
+roundabout - 31: OK
+2896 575 279
+roundabout - 32: INVÁLIDO
+3210 540 0
+roundabout - 33: OK
+2938 490 203
+roundabout - 34: INVÁLIDO
+3173 538 0
+roundabout - 35: OK
+2447 466 679
+roundabout - 36: INVÁLIDO
+3186 526 0
+roundabout - 37: INVÁLIDO
+2857 539 0
+roundabout - 38: OK
+2083 251 348
+roundabout - 39: INVÁLIDO
+2938 478 0
+roundabout - 40: INVÁLIDO
+3027 522 0
+roundabout - 41: OK
+2392 398 688
+roundabout - 42: OK
+2565 486 583
+roundabout - 43: OK
+2345 332 953
+roundabout - 44: OK
+2669 452 469
+roundabout - 45: OK
+2679 451 330
+roundabout - 46: OK
+2630 575 194
+roundabout - 47: OK
+2855 397 220
+roundabout - 48: INVÁLIDO
+3161 531 0
+roundabout - 49: OK
+1725 242 1709

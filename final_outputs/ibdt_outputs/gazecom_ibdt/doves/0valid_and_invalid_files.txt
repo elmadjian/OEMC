@@ -1,0 +1,92 @@
+doves - 1: OK
+2107 442 943
+doves - 2: OK
+2556 242 639
+doves - 3: INVÁLIDO
+2858 436 0
+doves - 4: OK
+1772 338 1337
+doves - 5: OK
+2594 324 755
+doves - 6: OK
+2905 374 471
+doves - 7: OK
+2316 362 728
+doves - 8: OK
+2702 505 543
+doves - 9: OK
+2126 359 440
+doves - 10: OK
+2731 355 457
+doves - 11: OK
+2027 350 1153
+doves - 12: OK
+2601 567 570
+doves - 13: OK
+2524 575 443
+doves - 14: OK
+2588 397 458
+doves - 15: OK
+2147 556 1047
+doves - 16: OK
+2539 345 566
+doves - 17: OK
+2817 357 576
+doves - 18: OK
+2948 391 277
+doves - 19: OK
+2367 415 622
+doves - 20: OK
+3114 308 228
+doves - 21: OK
+2294 477 713
+doves - 22: OK
+3062 381 139
+doves - 23: OK
+2531 480 331
+doves - 24: OK
+2378 278 878
+doves - 25: OK
+2726 485 480
+doves - 26: OK
+2392 352 870
+doves - 27: OK
+2707 307 603
+doves - 28: OK
+3157 235 358
+doves - 29: OK
+2060 546 970
+doves - 30: OK
+2284 474 779
+doves - 31: OK
+2732 333 512
+doves - 32: OK
+2271 415 823
+doves - 33: OK
+2268 541 295
+doves - 34: OK
+2658 442 288
+doves - 35: OK
+2498 292 688
+doves - 36: OK
+2158 360 1087
+doves - 37: OK
+2955 286 238
+doves - 38: OK
+2801 369 102
+doves - 39: OK
+3083 366 251
+doves - 40: OK
+1474 167 672
+doves - 41: OK
+1991 187 1572
+doves - 42: OK
+2494 330 629
+doves - 43: OK
+1754 310 1228
+doves - 44: OK
+2643 486 291
+doves - 45: OK
+1807 352 1460
+doves - 46: OK
+2443 351 956

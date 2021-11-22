@@ -1,0 +1,100 @@
+bridge_1 - 1: INVÁLIDO
+3348 402 0
+bridge_1 - 2: INVÁLIDO
+3359 324 0
+bridge_1 - 3: INVÁLIDO
+3479 221 0
+bridge_1 - 4: INVÁLIDO
+2963 386 0
+bridge_1 - 5: INVÁLIDO
+3250 232 0
+bridge_1 - 6: INVÁLIDO
+2581 445 0
+bridge_1 - 7: INVÁLIDO
+3139 324 0
+bridge_1 - 8: INVÁLIDO
+2962 579 0
+bridge_1 - 9: INVÁLIDO
+3232 256 0
+bridge_1 - 10: INVÁLIDO
+3147 342 0
+bridge_1 - 11: INVÁLIDO
+3368 344 0
+bridge_1 - 12: INVÁLIDO
+2765 282 0
+bridge_1 - 13: INVÁLIDO
+2996 343 0
+bridge_1 - 14: INVÁLIDO
+3247 391 0
+bridge_1 - 15: INVÁLIDO
+3083 502 0
+bridge_1 - 16: INVÁLIDO
+3183 179 0
+bridge_1 - 17: INVÁLIDO
+3225 432 0
+bridge_1 - 18: INVÁLIDO
+3047 396 0
+bridge_1 - 19: INVÁLIDO
+3328 315 0
+bridge_1 - 20: INVÁLIDO
+3240 256 0
+bridge_1 - 21: INVÁLIDO
+3200 337 0
+bridge_1 - 22: INVÁLIDO
+3064 408 0
+bridge_1 - 23: INVÁLIDO
+3165 380 0
+bridge_1 - 24: INVÁLIDO
+2926 648 0
+bridge_1 - 25: INVÁLIDO
+2813 371 0
+bridge_1 - 26: INVÁLIDO
+3231 352 0
+bridge_1 - 27: INVÁLIDO
+3171 261 0
+bridge_1 - 28: INVÁLIDO
+3255 416 0
+bridge_1 - 29: INVÁLIDO
+3248 402 0
+bridge_1 - 30: INVÁLIDO
+3127 445 0
+bridge_1 - 31: INVÁLIDO
+2924 354 0
+bridge_1 - 32: INVÁLIDO
+3207 497 0
+bridge_1 - 33: INVÁLIDO
+3210 432 0
+bridge_1 - 34: INVÁLIDO
+2864 468 0
+bridge_1 - 35: INVÁLIDO
+3258 429 0
+bridge_1 - 36: INVÁLIDO
+2856 335 0
+bridge_1 - 37: INVÁLIDO
+3098 327 0
+bridge_1 - 38: INVÁLIDO
+2840 511 0
+bridge_1 - 39: INVÁLIDO
+3302 319 0
+bridge_1 - 40: INVÁLIDO
+2943 489 0
+bridge_1 - 41: INVÁLIDO
+3073 540 0
+bridge_1 - 42: INVÁLIDO
+3150 600 0
+bridge_1 - 43: INVÁLIDO
+3166 534 0
+bridge_1 - 44: INVÁLIDO
+3230 424 0
+bridge_1 - 45: INVÁLIDO
+3146 390 0
+bridge_1 - 46: INVÁLIDO
+3246 300 0
+bridge_1 - 47: INVÁLIDO
+3297 374 0
+bridge_1 - 48: INVÁLIDO
+2671 374 0
+bridge_1 - 49: INVÁLIDO
+2991 379 0
+bridge_1 - 50: INVÁLIDO
+2952 480 0

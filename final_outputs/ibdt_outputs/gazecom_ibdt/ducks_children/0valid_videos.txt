@@ -1,0 +1,100 @@
+ducks_children - 1: OK
+2334 287 1017
+ducks_children - 2: OK
+2382 436 712
+ducks_children - 3: OK
+2334 390 894
+ducks_children - 4: OK
+2774 464 257
+ducks_children - 5: OK
+2152 347 611
+ducks_children - 6: OK
+2131 583 951
+ducks_children - 7: OK
+2286 351 742
+ducks_children - 8: OK
+1970 324 819
+ducks_children - 9: OK
+1595 221 1892
+ducks_children - 10: OK
+2286 379 974
+ducks_children - 11: OK
+2314 375 687
+ducks_children - 12: OK
+1901 291 1291
+ducks_children - 13: OK
+2635 421 632
+ducks_children - 14: OK
+2441 448 665
+ducks_children - 15: OK
+1989 378 1303
+ducks_children - 16: OK
+2211 352 834
+ducks_children - 17: OK
+2022 264 1116
+ducks_children - 18: OK
+2335 468 891
+ducks_children - 19: OK
+2179 440 1131
+ducks_children - 20: OK
+2454 368 922
+ducks_children - 21: OK
+2655 461 588
+ducks_children - 22: OK
+2596 532 622
+ducks_children - 23: OK
+2116 428 1103
+ducks_children - 24: OK
+2397 608 640
+ducks_children - 25: OK
+1926 369 1094
+ducks_children - 26: OK
+2360 390 905
+ducks_children - 27: OK
+2886 362 502
+ducks_children - 28: OK
+2254 291 1153
+ducks_children - 29: OK
+2595 393 659
+ducks_children - 30: OK
+2413 411 782
+ducks_children - 31: OK
+2281 392 1014
+ducks_children - 32: OK
+1889 356 894
+ducks_children - 33: OK
+2272 302 1072
+ducks_children - 34: OK
+3100 175 105
+ducks_children - 35: OK
+2015 446 1234
+ducks_children - 36: OK
+1872 427 1074
+ducks_children - 37: OK
+1948 521 1028
+ducks_children - 38: OK
+2045 546 1125
+ducks_children - 39: OK
+1875 246 1322
+ducks_children - 40: OK
+1614 498 1400
+ducks_children - 41: OK
+2209 333 724
+ducks_children - 42: OK
+2647 359 589
+ducks_children - 43: OK
+2537 590 594
+ducks_children - 44: OK
+2177 432 1141
+ducks_children - 45: OK
+2449 305 996
+ducks_children - 46: OK
+2119 550 1081
+ducks_children - 47: OK
+2311 524 562
+ducks_children - 48: OK
+2254 413 851
+ducks_children - 49: OK
+2840 427 483
+ducks_children - 50: OK
+2089 439 1182

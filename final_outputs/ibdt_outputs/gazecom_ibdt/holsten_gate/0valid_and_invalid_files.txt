@@ -1,0 +1,92 @@
+holsten_gate - 1: OK
+2835 388 395
+holsten_gate - 2: OK
+2890 317 250
+holsten_gate - 3: OK
+2481 490 451
+holsten_gate - 4: INVÁLIDO
+3182 540 0
+holsten_gate - 5: OK
+2716 381 294
+holsten_gate - 6: INVÁLIDO
+2863 628 0
+holsten_gate - 7: INVÁLIDO
+3172 474 0
+holsten_gate - 8: OK
+3182 372 73
+holsten_gate - 9: OK
+2794 442 376
+holsten_gate - 10: OK
+2847 356 426
+holsten_gate - 11: INVÁLIDO
+3255 488 0
+holsten_gate - 12: OK
+2586 447 317
+holsten_gate - 13: INVÁLIDO
+3182 429 0
+holsten_gate - 14: OK
+2714 380 447
+holsten_gate - 15: OK
+2619 536 50
+holsten_gate - 16: INVÁLIDO
+2523 386 0
+holsten_gate - 17: OK
+3064 513 173
+holsten_gate - 18: INVÁLIDO
+3246 362 0
+holsten_gate - 19: OK
+2717 597 267
+holsten_gate - 20: INVÁLIDO
+3228 398 0
+holsten_gate - 21: OK
+2570 364 381
+holsten_gate - 22: OK
+2497 257 293
+holsten_gate - 23: OK
+2845 419 104
+holsten_gate - 24: OK
+2683 448 311
+holsten_gate - 25: OK
+3088 296 210
+holsten_gate - 26: OK
+2996 474 204
+holsten_gate - 27: OK
+2834 404 185
+holsten_gate - 28: INVÁLIDO
+2783 774 0
+holsten_gate - 29: OK
+3047 392 83
+holsten_gate - 30: INVÁLIDO
+3206 459 0
+holsten_gate - 31: OK
+3044 422 212
+holsten_gate - 32: OK
+2879 548 323
+holsten_gate - 33: OK
+2502 347 757
+holsten_gate - 34: INVÁLIDO
+3197 268 0
+holsten_gate - 35: INVÁLIDO
+3082 316 0
+holsten_gate - 36: INVÁLIDO
+3127 479 0
+holsten_gate - 37: OK
+3083 373 236
+holsten_gate - 38: OK
+3183 328 159
+holsten_gate - 39: INVÁLIDO
+3022 548 0
+holsten_gate - 40: OK
+3103 404 105
+holsten_gate - 41: INVÁLIDO
+2932 632 0
+holsten_gate - 42: OK
+2980 442 218
+holsten_gate - 43: INVÁLIDO
+2630 604 0
+holsten_gate - 44: INVÁLIDO
+2972 350 0
+holsten_gate - 45: OK
+2869 54 48
+holsten_gate - 46: OK
+2847 486 242

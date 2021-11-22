@@ -1,0 +1,100 @@
+street - 1: OK
+2484 415 413
+street - 2: OK
+2915 241 579
+street - 3: OK
+2715 387 474
+street - 4: OK
+2264 353 849
+street - 5: OK
+2435 309 510
+street - 6: OK
+2820 485 296
+street - 7: OK
+2661 402 630
+street - 8: OK
+2813 376 392
+street - 9: OK
+2995 315 226
+street - 10: OK
+2162 423 253
+street - 11: OK
+2820 314 380
+street - 12: OK
+2900 213 637
+street - 13: OK
+3083 233 234
+street - 14: INVÁLIDO
+2984 520 0
+street - 15: OK
+1758 324 1497
+street - 16: OK
+2882 465 208
+street - 17: OK
+2717 379 366
+street - 18: OK
+2831 306 266
+street - 19: OK
+2992 377 105
+street - 20: OK
+2610 193 392
+street - 21: OK
+1905 221 1555
+street - 22: OK
+2745 512 399
+street - 23: OK
+2715 555 480
+street - 24: OK
+2682 409 232
+street - 25: OK
+2923 271 370
+street - 26: OK
+2734 464 281
+street - 27: OK
+2754 244 355
+street - 28: OK
+2890 284 449
+street - 29: OK
+2281 415 963
+street - 30: OK
+2713 475 233
+street - 31: OK
+2876 333 264
+street - 32: OK
+2335 411 338
+street - 33: OK
+2922 396 154
+street - 34: OK
+2364 381 674
+street - 35: OK
+2486 146 858
+street - 36: OK
+2223 241 1223
+street - 37: OK
+2573 323 716
+street - 38: OK
+2917 347 423
+street - 39: OK
+2913 404 415
+street - 40: INVÁLIDO
+3180 426 0
+street - 41: OK
+2714 519 453
+street - 42: OK
+2458 277 87
+street - 43: OK
+2418 420 511
+street - 44: OK
+2491 245 655
+street - 45: OK
+2215 308 270
+street - 46: OK
+2587 617 353
+street - 47: OK
+2535 475 572
+street - 48: OK
+2489 282 706
+street - 49: OK
+2834 273 484
+street - 50: OK
+2258 304 523

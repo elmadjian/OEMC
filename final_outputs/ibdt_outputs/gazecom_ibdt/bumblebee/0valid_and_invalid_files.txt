@@ -1,0 +1,86 @@
+bumblebee - 1: INVÁLIDO
+3339 244 0
+bumblebee - 2: OK
+3088 318 152
+bumblebee - 3: INVÁLIDO
+3104 408 0
+bumblebee - 4: OK
+3442 187 115
+bumblebee - 5: INVÁLIDO
+2811 203 0
+bumblebee - 6: INVÁLIDO
+3310 240 0
+bumblebee - 7: INVÁLIDO
+3496 254 0
+bumblebee - 8: INVÁLIDO
+3080 357 0
+bumblebee - 9: INVÁLIDO
+3484 266 0
+bumblebee - 10: OK
+3314 261 56
+bumblebee - 11: INVÁLIDO
+3179 353 0
+bumblebee - 12: OK
+3192 305 109
+bumblebee - 13: INVÁLIDO
+3460 173 0
+bumblebee - 14: INVÁLIDO
+3365 342 0
+bumblebee - 15: INVÁLIDO
+3532 218 0
+bumblebee - 16: INVÁLIDO
+3139 191 0
+bumblebee - 17: INVÁLIDO
+3480 210 0
+bumblebee - 18: OK
+3360 248 67
+bumblebee - 19: OK
+3121 190 211
+bumblebee - 20: INVÁLIDO
+3085 436 0
+bumblebee - 21: INVÁLIDO
+3276 351 0
+bumblebee - 22: INVÁLIDO
+3453 222 0
+bumblebee - 23: OK
+3235 133 134
+bumblebee - 24: OK
+3000 241 236
+bumblebee - 25: INVÁLIDO
+3077 113 0
+bumblebee - 26: INVÁLIDO
+3000 643 0
+bumblebee - 27: INVÁLIDO
+3117 495 0
+bumblebee - 28: INVÁLIDO
+3397 353 0
+bumblebee - 29: OK
+3340 375 35
+bumblebee - 30: INVÁLIDO
+3003 282 0
+bumblebee - 31: OK
+3157 298 295
+bumblebee - 32: OK
+3399 260 27
+bumblebee - 33: INVÁLIDO
+3297 405 0
+bumblebee - 34: INVÁLIDO
+3441 309 0
+bumblebee - 35: INVÁLIDO
+3276 277 0
+bumblebee - 36: INVÁLIDO
+3343 341 0
+bumblebee - 37: OK
+3056 433 56
+bumblebee - 38: OK
+3278 253 68
+bumblebee - 39: OK
+3405 277 68
+bumblebee - 40: OK
+3088 385 84
+bumblebee - 41: INVÁLIDO
+3472 213 0
+bumblebee - 42: OK
+2936 116 103
+bumblebee - 43: INVÁLIDO
+3208 444 0

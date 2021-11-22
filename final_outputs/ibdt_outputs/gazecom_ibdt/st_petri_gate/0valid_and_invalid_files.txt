@@ -1,0 +1,100 @@
+st_petri_gate - 1: OK
+2875 327 451
+st_petri_gate - 2: INVÁLIDO
+3322 310 0
+st_petri_gate - 3: INVÁLIDO
+3292 412 0
+st_petri_gate - 4: INVÁLIDO
+3201 340 0
+st_petri_gate - 5: INVÁLIDO
+3024 486 0
+st_petri_gate - 6: INVÁLIDO
+2836 434 0
+st_petri_gate - 7: INVÁLIDO
+3088 586 0
+st_petri_gate - 8: INVÁLIDO
+2583 470 0
+st_petri_gate - 9: INVÁLIDO
+2823 596 0
+st_petri_gate - 10: OK
+2874 541 219
+st_petri_gate - 11: INVÁLIDO
+3340 410 0
+st_petri_gate - 12: INVÁLIDO
+3244 506 0
+st_petri_gate - 13: OK
+3091 378 281
+st_petri_gate - 14: INVÁLIDO
+2688 901 0
+st_petri_gate - 15: INVÁLIDO
+3041 337 0
+st_petri_gate - 16: INVÁLIDO
+3029 380 0
+st_petri_gate - 17: INVÁLIDO
+3081 468 0
+st_petri_gate - 18: INVÁLIDO
+2604 545 0
+st_petri_gate - 19: OK
+2099 309 1263
+st_petri_gate - 20: INVÁLIDO
+3046 699 0
+st_petri_gate - 21: INVÁLIDO
+3091 482 0
+st_petri_gate - 22: INVÁLIDO
+3065 368 0
+st_petri_gate - 23: INVÁLIDO
+3002 435 0
+st_petri_gate - 24: OK
+2906 396 189
+st_petri_gate - 25: INVÁLIDO
+2744 463 0
+st_petri_gate - 26: OK
+3055 421 204
+st_petri_gate - 27: INVÁLIDO
+3071 458 0
+st_petri_gate - 28: INVÁLIDO
+3050 581 0
+st_petri_gate - 29: INVÁLIDO
+2934 481 0
+st_petri_gate - 30: INVÁLIDO
+3301 319 0
+st_petri_gate - 31: INVÁLIDO
+3041 530 0
+st_petri_gate - 32: INVÁLIDO
+3093 509 0
+st_petri_gate - 33: INVÁLIDO
+3136 614 0
+st_petri_gate - 34: INVÁLIDO
+3208 531 0
+st_petri_gate - 35: INVÁLIDO
+2801 560 0
+st_petri_gate - 36: INVÁLIDO
+3026 550 0
+st_petri_gate - 37: INVÁLIDO
+3334 416 0
+st_petri_gate - 38: INVÁLIDO
+3118 562 0
+st_petri_gate - 39: INVÁLIDO
+3079 575 0
+st_petri_gate - 40: OK
+3170 372 109
+st_petri_gate - 41: INVÁLIDO
+3214 474 0
+st_petri_gate - 42: INVÁLIDO
+3182 371 0
+st_petri_gate - 43: INVÁLIDO
+3187 557 0
+st_petri_gate - 44: INVÁLIDO
+3126 490 0
+st_petri_gate - 45: INVÁLIDO
+3248 502 0
+st_petri_gate - 46: INVÁLIDO
+3027 320 0
+st_petri_gate - 47: OK
+2702 504 157
+st_petri_gate - 48: INVÁLIDO
+3012 339 0
+st_petri_gate - 49: INVÁLIDO
+3017 615 0
+st_petri_gate - 50: INVÁLIDO
+3255 388 0

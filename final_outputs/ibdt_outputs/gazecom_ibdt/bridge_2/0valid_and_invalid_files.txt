@@ -1,0 +1,104 @@
+bridge_2 - 1: OK
+2673 428 530
+bridge_2 - 2: INVÁLIDO
+2938 416 0
+bridge_2 - 3: OK
+2430 426 751
+bridge_2 - 4: OK
+1379 270 1984
+bridge_2 - 5: OK
+1976 271 1174
+bridge_2 - 6: OK
+2274 385 1091
+bridge_2 - 7: OK
+2444 338 698
+bridge_2 - 8: OK
+2609 375 546
+bridge_2 - 9: OK
+2115 296 1103
+bridge_2 - 10: OK
+2228 321 1050
+bridge_2 - 11: OK
+2762 492 455
+bridge_2 - 12: OK
+2460 317 747
+bridge_2 - 13: OK
+1928 285 1312
+bridge_2 - 14: OK
+2737 512 327
+bridge_2 - 15: OK
+2936 407 407
+bridge_2 - 16: OK
+2282 310 906
+bridge_2 - 17: OK
+2153 353 1244
+bridge_2 - 18: OK
+1845 422 993
+bridge_2 - 19: OK
+1554 375 1559
+bridge_2 - 20: OK
+2623 356 738
+bridge_2 - 21: OK
+2211 433 1106
+bridge_2 - 22: OK
+2672 479 410
+bridge_2 - 23: OK
+2607 536 503
+bridge_2 - 24: OK
+2228 432 1090
+bridge_2 - 25: OK
+2425 345 844
+bridge_2 - 26: OK
+947 194 1949
+bridge_2 - 27: OK
+2511 143 969
+bridge_2 - 28: OK
+1932 223 1271
+bridge_2 - 29: OK
+1725 360 1499
+bridge_2 - 30: OK
+1294 226 1663
+bridge_2 - 31: OK
+2146 272 585
+bridge_2 - 32: INVÁLIDO
+2520 350 0
+bridge_2 - 33: OK
+1417 254 1916
+bridge_2 - 34: INVÁLIDO
+2902 611 0
+bridge_2 - 35: OK
+2816 422 405
+bridge_2 - 36: OK
+1777 577 1238
+bridge_2 - 37: OK
+2347 413 924
+bridge_2 - 38: OK
+1501 236 1766
+bridge_2 - 39: OK
+1586 215 1683
+bridge_2 - 40: OK
+3138 308 107
+bridge_2 - 41: OK
+2151 228 402
+bridge_2 - 42: OK
+2564 305 476
+bridge_2 - 43: OK
+2141 325 1016
+bridge_2 - 44: OK
+2444 273 690
+bridge_2 - 45: OK
+1855 245 1004
+bridge_2 - 46: OK
+2038 257 1149
+bridge_2 - 47: OK
+2629 367 654
+bridge_2 - 48: OK
+1983 245 1481
+bridge_2 - 49: OK
+1353 289 2045
+bridge_2 - 50: OK
+2600 416 417
+bridge_2 - 51: OK
+2343 338 974
+bridge_2 - 52: OK
+2140 240 1236

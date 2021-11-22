@@ -1,0 +1,90 @@
+st_petri_market - 1: OK
+3157 196 326
+st_petri_market - 2: INVÁLIDO
+3296 406 0
+st_petri_market - 3: OK
+2768 352 130
+st_petri_market - 4: INVÁLIDO
+2843 450 0
+st_petri_market - 5: INVÁLIDO
+2756 520 0
+st_petri_market - 6: INVÁLIDO
+3099 437 0
+st_petri_market - 7: INVÁLIDO
+2871 521 0
+st_petri_market - 8: INVÁLIDO
+3131 504 0
+st_petri_market - 9: INVÁLIDO
+3033 162 0
+st_petri_market - 10: INVÁLIDO
+3362 265 0
+st_petri_market - 11: INVÁLIDO
+3314 365 0
+st_petri_market - 12: INVÁLIDO
+2930 430 0
+st_petri_market - 13: INVÁLIDO
+3555 195 0
+st_petri_market - 14: OK
+2955 391 211
+st_petri_market - 15: INVÁLIDO
+3190 335 0
+st_petri_market - 16: OK
+3153 396 80
+st_petri_market - 17: INVÁLIDO
+3121 252 0
+st_petri_market - 18: OK
+2986 340 314
+st_petri_market - 19: OK
+3128 248 291
+st_petri_market - 20: INVÁLIDO
+3268 434 0
+st_petri_market - 21: INVÁLIDO
+2966 305 0
+st_petri_market - 22: INVÁLIDO
+3112 510 0
+st_petri_market - 23: INVÁLIDO
+3058 508 0
+st_petri_market - 24: INVÁLIDO
+3239 405 0
+st_petri_market - 25: INVÁLIDO
+3395 355 0
+st_petri_market - 26: OK
+3256 271 156
+st_petri_market - 27: OK
+3125 268 253
+st_petri_market - 28: INVÁLIDO
+3414 336 0
+st_petri_market - 29: OK
+2675 431 104
+st_petri_market - 30: INVÁLIDO
+2804 423 0
+st_petri_market - 31: INVÁLIDO
+3005 281 0
+st_petri_market - 32: INVÁLIDO
+3315 351 0
+st_petri_market - 33: INVÁLIDO
+3265 422 0
+st_petri_market - 34: INVÁLIDO
+3183 439 0
+st_petri_market - 35: INVÁLIDO
+3059 420 0
+st_petri_market - 36: INVÁLIDO
+2811 751 0
+st_petri_market - 37: INVÁLIDO
+2914 559 0
+st_petri_market - 38: OK
+2355 442 696
+st_petri_market - 39: INVÁLIDO
+3353 397 0
+st_petri_market - 40: INVÁLIDO
+3299 412 0
+st_petri_market - 41: OK
+2689 319 728
+st_petri_market - 42: OK
+2629 431 500
+st_petri_market - 43: INVÁLIDO
+3295 408 0
+st_petri_market - 44: INVÁLIDO
+3185 438 0
+st_petri_market - 45: INVÁLIDO
+3198 317 0

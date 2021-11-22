@@ -1,0 +1,98 @@
+koenigstrasse - 1: OK
+2495 525 520
+koenigstrasse - 2: OK
+2453 556 741
+koenigstrasse - 3: OK
+2842 353 510
+koenigstrasse - 4: INVÁLIDO
+2994 462 0
+koenigstrasse - 5: OK
+2372 485 657
+koenigstrasse - 6: OK
+2472 359 44
+koenigstrasse - 7: OK
+1863 571 1212
+koenigstrasse - 8: OK
+2427 449 808
+koenigstrasse - 9: OK
+2456 451 728
+koenigstrasse - 10: OK
+1914 457 1340
+koenigstrasse - 11: OK
+2973 370 363
+koenigstrasse - 12: OK
+3022 535 79
+koenigstrasse - 13: OK
+2181 514 954
+koenigstrasse - 14: OK
+2239 386 1125
+koenigstrasse - 15: OK
+2441 509 800
+koenigstrasse - 16: OK
+2200 361 930
+koenigstrasse - 17: OK
+2177 459 1114
+koenigstrasse - 18: OK
+1881 374 1293
+koenigstrasse - 19: OK
+2474 434 842
+koenigstrasse - 20: OK
+2420 511 733
+koenigstrasse - 21: OK
+2372 233 449
+koenigstrasse - 22: OK
+2794 780 138
+koenigstrasse - 23: OK
+2866 346 480
+koenigstrasse - 24: OK
+2892 539 136
+koenigstrasse - 25: OK
+1992 389 846
+koenigstrasse - 26: OK
+1982 389 1090
+koenigstrasse - 27: OK
+2244 330 987
+koenigstrasse - 28: OK
+2375 490 669
+koenigstrasse - 29: OK
+1721 441 1453
+koenigstrasse - 30: OK
+2676 544 424
+koenigstrasse - 31: OK
+1705 454 1253
+koenigstrasse - 32: OK
+2374 583 735
+koenigstrasse - 33: OK
+2152 304 523
+koenigstrasse - 34: OK
+2202 417 1057
+koenigstrasse - 35: OK
+2256 344 683
+koenigstrasse - 36: OK
+2392 332 826
+koenigstrasse - 37: OK
+1472 306 1524
+koenigstrasse - 38: OK
+1498 504 1587
+koenigstrasse - 39: OK
+1661 369 1613
+koenigstrasse - 40: OK
+2127 378 1029
+koenigstrasse - 41: OK
+1337 280 1751
+koenigstrasse - 42: OK
+2917 436 258
+koenigstrasse - 43: OK
+1739 460 1291
+koenigstrasse - 44: OK
+2758 467 524
+koenigstrasse - 45: OK
+2281 419 983
+koenigstrasse - 46: OK
+2719 457 574
+koenigstrasse - 47: OK
+1716 284 1583
+koenigstrasse - 48: OK
+1962 405 1157
+koenigstrasse - 49: OK
+2651 326 722

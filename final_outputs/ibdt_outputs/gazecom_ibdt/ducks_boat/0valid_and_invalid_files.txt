@@ -1,0 +1,92 @@
+ducks_boat - 1: OK
+2398 504 848
+ducks_boat - 2: OK
+1950 566 951
+ducks_boat - 3: OK
+1910 422 1256
+ducks_boat - 4: OK
+2091 443 1136
+ducks_boat - 5: OK
+2508 404 782
+ducks_boat - 6: OK
+1640 436 1390
+ducks_boat - 7: OK
+2723 424 390
+ducks_boat - 8: OK
+2546 468 635
+ducks_boat - 9: OK
+1595 581 1042
+ducks_boat - 10: OK
+2648 374 491
+ducks_boat - 11: OK
+1991 411 1097
+ducks_boat - 12: OK
+2829 420 65
+ducks_boat - 13: OK
+2775 577 260
+ducks_boat - 14: OK
+1898 482 1370
+ducks_boat - 15: OK
+1732 311 978
+ducks_boat - 16: OK
+2472 473 752
+ducks_boat - 17: OK
+2094 502 1018
+ducks_boat - 18: OK
+1971 335 1185
+ducks_boat - 19: OK
+3027 576 76
+ducks_boat - 20: OK
+2333 391 910
+ducks_boat - 21: OK
+3010 184 243
+ducks_boat - 22: OK
+1808 386 1283
+ducks_boat - 23: OK
+2007 554 1189
+ducks_boat - 24: OK
+1790 363 1424
+ducks_boat - 25: OK
+2066 344 1291
+ducks_boat - 26: OK
+2752 398 406
+ducks_boat - 27: OK
+2063 589 1044
+ducks_boat - 28: OK
+1833 463 1408
+ducks_boat - 29: INVÁLIDO
+3070 610 0
+ducks_boat - 30: OK
+2758 596 396
+ducks_boat - 31: OK
+2299 547 853
+ducks_boat - 32: OK
+2494 329 645
+ducks_boat - 33: OK
+2134 469 1147
+ducks_boat - 34: OK
+2382 427 784
+ducks_boat - 35: OK
+1917 448 1178
+ducks_boat - 36: OK
+2123 612 1015
+ducks_boat - 37: OK
+1668 630 1200
+ducks_boat - 38: OK
+1875 397 1031
+ducks_boat - 39: OK
+1977 507 896
+ducks_boat - 40: OK
+1898 481 1308
+ducks_boat - 41: OK
+2939 348 356
+ducks_boat - 42: OK
+2068 518 1113
+ducks_boat - 43: OK
+1741 472 1494
+ducks_boat - 44: OK
+2039 373 1099
+ducks_boat - 45: OK
+2342 681 664
+ducks_boat - 46: OK
+2893 475 196

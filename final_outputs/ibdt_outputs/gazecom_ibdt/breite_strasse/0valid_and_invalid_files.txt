@@ -1,0 +1,104 @@
+breite_strasse - 1: OK
+2944 417 151
+breite_strasse - 2: OK
+3006 327 362
+breite_strasse - 3: OK
+2388 421 880
+breite_strasse - 4: OK
+2821 396 490
+breite_strasse - 5: OK
+2764 580 406
+breite_strasse - 6: INVÁLIDO
+3322 428 0
+breite_strasse - 7: OK
+2252 337 680
+breite_strasse - 8: OK
+2964 461 325
+breite_strasse - 9: OK
+2609 327 814
+breite_strasse - 10: OK
+2439 668 490
+breite_strasse - 11: OK
+2955 384 351
+breite_strasse - 12: OK
+3225 271 254
+breite_strasse - 13: OK
+2707 285 641
+breite_strasse - 14: OK
+1514 383 1543
+breite_strasse - 15: OK
+3186 391 103
+breite_strasse - 16: OK
+2706 506 184
+breite_strasse - 17: OK
+2782 461 386
+breite_strasse - 18: OK
+2880 437 377
+breite_strasse - 19: OK
+2741 497 349
+breite_strasse - 20: OK
+2375 302 872
+breite_strasse - 21: OK
+2887 389 410
+breite_strasse - 22: OK
+3192 337 98
+breite_strasse - 23: OK
+2796 374 227
+breite_strasse - 24: OK
+3183 411 102
+breite_strasse - 25: OK
+2597 384 769
+breite_strasse - 26: OK
+2742 277 563
+breite_strasse - 27: OK
+2359 411 668
+breite_strasse - 28: OK
+2255 366 1010
+breite_strasse - 29: OK
+3130 405 166
+breite_strasse - 30: OK
+3020 268 160
+breite_strasse - 31: OK
+3174 397 76
+breite_strasse - 32: OK
+3167 280 130
+breite_strasse - 33: OK
+2407 412 614
+breite_strasse - 34: OK
+2691 382 616
+breite_strasse - 35: OK
+2763 369 299
+breite_strasse - 36: OK
+2474 364 625
+breite_strasse - 37: OK
+2296 425 867
+breite_strasse - 38: OK
+2543 530 677
+breite_strasse - 39: OK
+2936 364 189
+breite_strasse - 40: OK
+2620 465 401
+breite_strasse - 41: OK
+3393 166 176
+breite_strasse - 42: OK
+3428 212 56
+breite_strasse - 43: OK
+2763 473 249
+breite_strasse - 44: OK
+2820 411 206
+breite_strasse - 45: OK
+2475 345 314
+breite_strasse - 46: OK
+2449 441 765
+breite_strasse - 47: OK
+2748 300 594
+breite_strasse - 48: OK
+2742 418 537
+breite_strasse - 49: OK
+2611 433 572
+breite_strasse - 50: OK
+3147 435 85
+breite_strasse - 51: OK
+2818 469 335
+breite_strasse - 52: OK
+2958 379 413

@@ -1,0 +1,94 @@
+beach - 1: OK
+2820 434 350
+beach - 2: OK
+2893 277 333
+beach - 3: INVÁLIDO
+3202 498 0
+beach - 4: INVÁLIDO
+3054 389 0
+beach - 5: OK
+2889 345 178
+beach - 6: INVÁLIDO
+2863 292 0
+beach - 7: OK
+3241 336 173
+beach - 8: OK
+2591 309 559
+beach - 9: INVÁLIDO
+3217 330 0
+beach - 10: OK
+2831 343 336
+beach - 11: OK
+3128 491 131
+beach - 12: OK
+3120 476 118
+beach - 13: OK
+2954 362 158
+beach - 14: OK
+2646 259 634
+beach - 15: INVÁLIDO
+3217 533 0
+beach - 16: OK
+2802 406 477
+beach - 17: OK
+2964 270 516
+beach - 18: INVÁLIDO
+3158 510 0
+beach - 19: INVÁLIDO
+3165 585 0
+beach - 20: OK
+2705 517 175
+beach - 21: OK
+3143 384 223
+beach - 22: OK
+2439 352 452
+beach - 23: INVÁLIDO
+2970 603 0
+beach - 24: INVÁLIDO
+2829 600 0
+beach - 25: OK
+2385 339 615
+beach - 26: OK
+2969 356 291
+beach - 27: INVÁLIDO
+3299 292 0
+beach - 28: OK
+2926 357 116
+beach - 29: INVÁLIDO
+3218 363 0
+beach - 30: INVÁLIDO
+3311 303 0
+beach - 31: OK
+2988 421 230
+beach - 32: OK
+3021 327 122
+beach - 33: INVÁLIDO
+3229 460 0
+beach - 34: OK
+2879 300 206
+beach - 35: INVÁLIDO
+3228 377 0
+beach - 36: INVÁLIDO
+3200 395 0
+beach - 37: OK
+2633 304 263
+beach - 38: INVÁLIDO
+3107 356 0
+beach - 39: OK
+2570 424 680
+beach - 40: INVÁLIDO
+3318 432 0
+beach - 41: OK
+3180 427 143
+beach - 42: INVÁLIDO
+3330 365 0
+beach - 43: OK
+2954 407 253
+beach - 44: INVÁLIDO
+3235 364 0
+beach - 45: INVÁLIDO
+3276 338 0
+beach - 46: OK
+1951 286 1398
+beach - 47: INVÁLIDO
+3033 270 0

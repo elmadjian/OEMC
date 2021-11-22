@@ -1,0 +1,92 @@
+puppies - 1: OK
+2647 419 537
+puppies - 2: OK
+2247 428 428
+puppies - 3: OK
+2619 547 584
+puppies - 4: INVÁLIDO
+3230 479 0
+puppies - 5: OK
+3139 355 198
+puppies - 6: OK
+2927 387 188
+puppies - 7: OK
+2547 326 205
+puppies - 8: OK
+2669 297 313
+puppies - 9: OK
+2691 264 177
+puppies - 10: OK
+2373 354 503
+puppies - 11: OK
+2439 355 240
+puppies - 12: INVÁLIDO
+3160 385 0
+puppies - 13: OK
+3149 456 98
+puppies - 14: OK
+2889 361 458
+puppies - 15: OK
+3016 321 73
+puppies - 16: OK
+2894 444 288
+puppies - 17: OK
+3096 414 240
+puppies - 18: OK
+2943 358 329
+puppies - 19: INVÁLIDO
+3285 286 0
+puppies - 20: INVÁLIDO
+3136 301 0
+puppies - 21: INVÁLIDO
+3272 347 0
+puppies - 22: OK
+3297 149 93
+puppies - 23: OK
+3197 340 213
+puppies - 24: OK
+2852 544 275
+puppies - 25: OK
+2755 364 331
+puppies - 26: OK
+3100 387 101
+puppies - 27: OK
+3081 465 204
+puppies - 28: OK
+2749 307 505
+puppies - 29: INVÁLIDO
+3360 390 0
+puppies - 30: OK
+3382 259 109
+puppies - 31: OK
+2900 443 238
+puppies - 32: OK
+2246 382 442
+puppies - 33: OK
+2771 477 128
+puppies - 34: OK
+2704 363 607
+puppies - 35: OK
+3090 410 131
+puppies - 36: OK
+2835 537 219
+puppies - 37: INVÁLIDO
+3188 314 0
+puppies - 38: OK
+2870 419 199
+puppies - 39: INVÁLIDO
+3310 440 0
+puppies - 40: OK
+2777 396 208
+puppies - 41: OK
+3037 318 202
+puppies - 42: OK
+3202 229 126
+puppies - 43: OK
+2973 366 293
+puppies - 44: OK
+3364 202 184
+puppies - 45: OK
+3060 366 124
+puppies - 46: OK
+3031 286 183

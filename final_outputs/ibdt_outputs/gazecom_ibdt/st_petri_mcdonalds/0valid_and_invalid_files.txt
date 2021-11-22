@@ -1,0 +1,82 @@
+st_petri_mcdonalds - 1: OK
+2397 568 568
+st_petri_mcdonalds - 2: OK
+2962 609 179
+st_petri_mcdonalds - 3: OK
+1665 834 1173
+st_petri_mcdonalds - 4: OK
+2559 671 386
+st_petri_mcdonalds - 5: OK
+2627 572 181
+st_petri_mcdonalds - 6: OK
+2945 480 325
+st_petri_mcdonalds - 7: OK
+2059 440 551
+st_petri_mcdonalds - 8: INVÁLIDO
+3216 483 0
+st_petri_mcdonalds - 9: OK
+2888 484 261
+st_petri_mcdonalds - 10: OK
+2216 408 1005
+st_petri_mcdonalds - 11: OK
+2776 566 227
+st_petri_mcdonalds - 12: OK
+2277 465 714
+st_petri_mcdonalds - 13: OK
+2669 471 419
+st_petri_mcdonalds - 14: OK
+2299 523 928
+st_petri_mcdonalds - 15: OK
+2597 543 595
+st_petri_mcdonalds - 16: OK
+2186 683 622
+st_petri_mcdonalds - 17: OK
+2742 558 405
+st_petri_mcdonalds - 18: OK
+1991 375 890
+st_petri_mcdonalds - 19: OK
+2295 428 978
+st_petri_mcdonalds - 20: OK
+2523 471 429
+st_petri_mcdonalds - 21: OK
+2418 493 558
+st_petri_mcdonalds - 22: INVÁLIDO
+2879 564 0
+st_petri_mcdonalds - 23: OK
+2818 478 249
+st_petri_mcdonalds - 24: OK
+2222 418 983
+st_petri_mcdonalds - 25: OK
+2856 533 350
+st_petri_mcdonalds - 26: OK
+2648 689 360
+st_petri_mcdonalds - 27: OK
+2746 533 456
+st_petri_mcdonalds - 28: OK
+2990 357 337
+st_petri_mcdonalds - 29: OK
+2345 454 633
+st_petri_mcdonalds - 30: OK
+2694 373 516
+st_petri_mcdonalds - 31: OK
+1872 298 1163
+st_petri_mcdonalds - 32: OK
+1934 490 1326
+st_petri_mcdonalds - 33: OK
+2446 557 556
+st_petri_mcdonalds - 34: OK
+2126 566 992
+st_petri_mcdonalds - 35: OK
+2186 414 1107
+st_petri_mcdonalds - 36: OK
+2598 594 476
+st_petri_mcdonalds - 37: OK
+2545 489 622
+st_petri_mcdonalds - 38: OK
+2734 473 496
+st_petri_mcdonalds - 39: INVÁLIDO
+3236 449 0
+st_petri_mcdonalds - 40: OK
+2566 518 666
+st_petri_mcdonalds - 41: INVÁLIDO
+3183 458 0
