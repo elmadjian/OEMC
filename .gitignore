@@ -4,8 +4,6 @@ cached/
 data/
 etra2016-ibdt*
 gazecom_arff/
-data_hmr/
-data_gazecom/
 models/
 outputs/
 toy_set/
