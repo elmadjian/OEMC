@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch.nn.utils import weight_norm
 
 '''
-TCN from Bai et al. (2018)
+Overall TCN implementation from Bai et al. (2018)
 SOURCE: https://github.com/locuslab/TCN/blob/master/TCN/tcn.py
 '''
 

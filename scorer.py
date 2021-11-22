@@ -5,6 +5,7 @@ import os
 import re
 import argparse
 from sklearn import metrics
+import matplotlib.pyplot as plt
 
 
 class Scorer():
@@ -89,9 +90,17 @@ class Scorer():
         print('SAMPLE-LEVEL metrics\n===================')
         print(metrics.classification_report(self.sample_gt, self.sample_preds, 
                                         target_names=target_names, digits=4))
+        metrics.ConfusionMatrixDisplay.from_predictions(self.sample_gt, 
+                                self.sample_preds, display_labels=target_names, 
+                                cmap='Purples', normalize='pred', values_format='.2f')
         print('EVENT-LEVEL metrics\n===================')
         print(metrics.classification_report(self.event_gt, self.event_preds,
                                         target_names=target_names, digits=4))
+        metrics.ConfusionMatrixDisplay.from_predictions(self.event_gt,
+                                self.event_preds, display_labels=target_names, 
+                                normalize='pred', cmap='Greens', values_format='.2f')
+        plt.show()
+
      
 
   

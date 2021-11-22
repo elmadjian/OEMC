@@ -104,9 +104,12 @@ class OnlineSimulator():
     def _predict(self, model, sample):
         with torch.no_grad():
             sample = torch.autograd.Variable(sample, requires_grad=False)
+            print(sample.shape)
             pred = model(sample)
             layer = torch.nn.Softmax(dim=1)
             pred = layer(pred)
+            print(pred.shape)
+            input()
             pred = pred.data.max(1, keepdim=True)[1]
             return pred
 

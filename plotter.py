@@ -22,6 +22,9 @@ class Plotter():
         torch.set_printoptions(sci_mode=False)
         self.n_classes = 4
         self._check_folder_exists(args.dataset)
+        self.caps = {'hmr': 'HMR', 'gazecom': 'GazeCom',
+            'cnn_lstm':'CNN-LSTM', 'cnn_blstm':'CNN-BiLSTM',
+            'tcn': 'TCN'}
 
 
     def _get_model_path(self, model_name, batch_size, fold):
@@ -74,8 +77,8 @@ class Plotter():
                 output = model(X)
                 layer = torch.nn.Softmax(dim=1)
                 pred = layer(output)
-            total_pred = np.append(total_pred, pred, axis=0)
-            total_label = np.append(total_label, Y, axis=0)
+            total_pred = np.append(total_pred, pred.cpu(), axis=0)
+            total_label = np.append(total_label, Y.cpu(), axis=0)
         return total_pred, total_label
 
 
@@ -111,7 +114,7 @@ class Plotter():
         plots = []
         for model in fpr.keys():
             plots.append(go.Scatter(x=fpr[model], y=tpr[model], 
-                        name=f"{model} AUC = {roc_auc[model]:.3f}"))
+                        name=f"{self.caps[model]} AUC = {roc_auc[model]:.3f}"))
         plots.append(go.Scatter(x=[0, 1], y=[0, 1], showlegend=False,
                 line=dict(dash='dash', color='gray')))
         fig = go.Figure(plots)
@@ -120,8 +123,8 @@ class Plotter():
             width=1000,height=800,
             xaxis_title='False positive rate',
             yaxis_title='True positive rate',
-            title=f'ROC curves on {self.args.dataset} dataset',
-            font = dict(size=16),
+            title=f'ROC curves on {self.caps[self.args.dataset]}',
+            font = dict(size=28),
             legend=dict(yanchor='bottom', y=0.05, xanchor='right', x=0.98),
             title_x=0.5
         )
@@ -171,17 +174,17 @@ class Plotter():
         plots = []
         for i, model in enumerate(sample_scores.keys()):
             plots.append(go.Scatter(x=offsets, y=sample_scores[model],
-                         name=f'{model} (sample-level)', line=dict(color=color[i])))
+                         name=f'{model} (sample)', line=dict(color=color[i])))
             plots.append(go.Scatter(x=offsets, y=event_scores[model],
-                    name=f'{model} (event-level)', line=dict(color=color[i], dash='dash')))   
+                    name=f'{model} (event)', line=dict(color=color[i], dash='dash')))   
         fig = go.Figure(plots)
         fig.update_layout(
             autosize=False,
             width=1000,height=800,
             xaxis_title='Look-ahead (ms)',
             yaxis_title='F-score (%)',
-            title=f'Look-ahead F-scores for {self.args.dataset} dataset',
-            font = dict(size=16),
+            title=f'Look-ahead F-scores for {self.caps[self.args.dataset]}',
+            font = dict(size=28),
             xaxis = dict(tickmode='array', tickvals=offsets),
             title_x=0.5
         )
@@ -193,17 +196,17 @@ class Plotter():
         plots = []
         for i, model in enumerate(sample_scores.keys()):
             plots.append(go.Scatter(x=timesteps, y=sample_scores[model],
-                         name=f'{model} (sample level)', line=dict(color=color[i])))
+                         name=f'{self.caps[model]} (sample)', line=dict(color=color[i])))
             plots.append(go.Scatter(x=timesteps, y=event_scores[model],
-                    name=f'{model} (event level)', line=dict(color=color[i], dash='dash')))   
+                    name=f'{self.caps[model]} (event)', line=dict(color=color[i], dash='dash')))   
         fig = go.Figure(plots)
         fig.update_layout(
             autosize=False,
             width=1000,height=800,
-            xaxis_title='Timesteps (into the past)',
+            xaxis_title='Time steps (into the past)',
             yaxis_title='F-score (%)',
-            title=f'F-scores with different timesteps for {self.args.dataset} dataset',
-            font = dict(size=16),
+            title=f'F-scores with different time steps for {self.caps[self.args.dataset]}',
+            font = dict(size=28),
             xaxis = dict(tickmode='array', tickvals=timesteps),
             title_x=0.5
         )
@@ -274,17 +277,20 @@ def parse():
             
 
 if __name__=='__main__':
-    # args = parse()
-    # pltr = Plotter(args)
+    caps = {'hmr': 'HMR', 'gazecom': 'GazeCom',
+            'cnn-lstm':'CNN-LSTM', 'cnn-blstm':'CNN-BiLSTM',
+            'tcn': 'TCN'}
+    args = parse()
+    pltr = Plotter(args)
 
     #=========== ROC CURVES
-    # tpr, fpr, roc_auc = {},{},{}
-    # for i, model_name in enumerate(args.models):
-    #     fpr_, tpr_, roc_auc_ = pltr.calculate_roc_auc(model_name, args.batch_size[i])
-    #     fpr[model_name] = fpr_
-    #     tpr[model_name] = tpr_
-    #     roc_auc[model_name] = roc_auc_
-    # pltr.plot_roc_auc(fpr, tpr, roc_auc)
+    tpr, fpr, roc_auc = {},{},{}
+    for i, model_name in enumerate(args.models):
+        fpr_, tpr_, roc_auc_ = pltr.calculate_roc_auc(model_name, args.batch_size[i])
+        fpr[model_name] = fpr_
+        tpr[model_name] = tpr_
+        roc_auc[model_name] = roc_auc_
+    pltr.plot_roc_auc(fpr, tpr, roc_auc)
 
 
     #============ LOOK-AHEAD
@@ -323,40 +329,40 @@ if __name__=='__main__':
     # pltr.plot_timesteps(samp_scores, evt_scores, timesteps)
 
     #============ LATENCY
-    data = {}
-    for f in glob.glob('CSV/*.csv'):
-        names = f.split('_')
-        model = names[1]
-        dataset = names[2]
-        device = names[4].split('.')[0]
-        if dataset not in data.keys():
-            data[dataset] = {}
-        if model not in data[dataset].keys():
-            data[dataset][model] = {}
-        df = pd.read_csv(f)
-        data[dataset][model][device] = [df.loc[0,'mean'], df.loc[0,'std']]
-    for dataset in data.keys():
-        fig = go.Figure()
-        for model in sorted(list(data[dataset].keys())):
-            means = [data[dataset][model]['gpu'][0], data[dataset][model]['cpu'][0]]
-            stds = [data[dataset][model]['gpu'][1], data[dataset][model]['cpu'][1]] 
-            fig.add_trace(go.Bar(
-                name=model,
-                x=['GPU', 'CPU'], 
-                y=means, error_y=dict(type='data', array=stds)
-            ))
-        fig.update_yaxes(range=[0,2])
-        fig.update_layout(
-            barmode='group',
-            autosize=False,
-            width=1000,height=800,
-            xaxis_title='Operating device',
-            yaxis_title='Latency (ms)',
-            title=f'Mean prediction latency for {dataset} dataset',
-            font = dict(size=16),
-            title_x=0.5
-        )
-        fig.write_image(f'latency_{dataset}.png')
+    # data = {}
+    # for f in glob.glob('CSV/*.csv'):
+    #     names = f.split('_')
+    #     model = names[1]
+    #     dataset = names[2]
+    #     device = names[4].split('.')[0]
+    #     if dataset not in data.keys():
+    #         data[dataset] = {}
+    #     if model not in data[dataset].keys():
+    #         data[dataset][model] = {}
+    #     df = pd.read_csv(f)
+    #     data[dataset][model][device] = [df.loc[0,'mean'], df.loc[0,'std']]
+    # for dataset in data.keys():
+    #     fig = go.Figure()
+    #     for model in sorted(list(data[dataset].keys())):
+    #         means = [data[dataset][model]['gpu'][0], data[dataset][model]['cpu'][0]]
+    #         stds = [data[dataset][model]['gpu'][1], data[dataset][model]['cpu'][1]] 
+    #         fig.add_trace(go.Bar(
+    #             name=caps[model],
+    #             x=['GPU', 'CPU'], 
+    #             y=means, error_y=dict(type='data', array=stds)
+    #         ))
+    #     fig.update_yaxes(range=[0,2])
+    #     fig.update_layout(
+    #         barmode='group',
+    #         autosize=False,
+    #         width=1000,height=800,
+    #         xaxis_title='Operating device',
+    #         yaxis_title='Latency (ms)',
+    #         title=f'Mean prediction latency for {caps[dataset]}',
+    #         font = dict(size=30),
+    #         title_x=0.5
+    #     )
+    #     fig.write_image(f'latency_{dataset}.png')
 
 
    
