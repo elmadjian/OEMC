@@ -102,8 +102,6 @@ class Scorer():
         plt.show()
 
      
-
-  
     def _count_event(self, preds, gt):
         i = 0
         while i < len(gt):
@@ -123,12 +121,6 @@ class Scorer():
 
 
 if __name__=="__main__":
-    #scorer = Scorer('outputs/', 'tcn_model_hmr_BATCH-2048_EPOCHS-25_FOLD-', 10)
-    #scorer.score()
-    #scorer = Scorer()
-    #scorer.score_ibdt('/home/cadu/GIT/gaze-com-classification/training_best_intervals/', 'gazecom')
-    #scorer.score_ibdt('hmr_classification', 'hmr')
-    #scorer
     parser = argparse.ArgumentParser()
     parser.add_argument('-d',
                         '--dataset',

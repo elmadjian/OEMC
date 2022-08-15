@@ -1,5 +1,4 @@
 from tcn import TCN
-from tcn_non_causal import TCN_NC
 from cnn_blstm import CNN_BLSTM
 from cnn_lstm import CNN_LSTM
 import torch
@@ -10,7 +9,6 @@ import numpy as np
 import random
 import scorer
 import argparse
-import time
 import copy
 
 
@@ -111,27 +109,27 @@ def check_randomize(args, trX, trY):
     return trX, trY, trX_val, trY_val
 
 
-def get_model(args, layers, features):
+def get_model(args, layers, features, n_classes):
     model = None
     if args.model == 'tcn':
-        model = TCN(args.timesteps, 4, layers,
+        model = TCN(args.timesteps, n_classes, layers,
                     kernel_size=args.kernel_size, dropout=args.dropout)
     elif args.model == 'cnn_blstm':
-        model = CNN_LSTM(args.timesteps, 4, args.kernel_size, args.dropout,
+        model = CNN_LSTM(args.timesteps, n_classes, args.kernel_size, args.dropout,
                           features, lstm_layers=2, bidirectional=True)
     elif args.model == 'cnn_lstm':
-        model = CNN_LSTM(args.timesteps, 4, args.kernel_size, args.dropout,
+        model = CNN_LSTM(args.timesteps, n_classes, args.kernel_size, args.dropout,
                          features, lstm_layers=2)
-    model.cuda()
+    if model is not None:
+        model.cuda()
     return model
 
 
 def get_optimizer(args, model, learning_rate):
     if args.model.startswith('tcn'):
-        optimizer = torch.optim.Adamax(model.parameters(), lr=learning_rate)
-    elif args.model.startswith('cnn'):
-        optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
-    return optimizer 
+        return torch.optim.Adamax(model.parameters(), lr=learning_rate)
+    else:
+        return torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 
 
 def get_best_model(model, best_model, score, best_score):
@@ -174,7 +172,7 @@ def main(args):
         steps = 0
         lr = args.lr
         
-        model = get_model(args, channel_sizes, features)
+        model = get_model(args, channel_sizes, features, n_classes)
         best_model, best_score = None, 0
         optimizer = get_optimizer(args, model, lr)
         num_batches = train_size//batch_size
@@ -219,16 +217,18 @@ def main(args):
         )
         if not os.path.exists('models'):
             os.makedirs('models')
-        torch.save(best_model.state_dict(), 'models/' + model_param + '.pt')
-        m = get_model(args, channel_sizes, features)
-        m.load_state_dict(torch.load('models/' + model_param + '.pt'))
+        if best_model is not None:
+            torch.save(best_model.state_dict(), 'models/' + model_param + '.pt')
+        m = get_model(args, channel_sizes, features, n_classes)
+        if m is not None:
+            m.load_state_dict(torch.load('models/' + model_param + '.pt'))
 
-        print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
-        num_test_batches = len(teY)//batch_size
-        t_loss, preds, labels = predict(m, num_test_batches, batch_size, 
-                                        teX, teY, timesteps, pproc)
-        print_scores(preds, labels, t_loss, 'Test')
-        save_test_output(model_param, preds, labels)
+            print(f'\nFINAL TEST - fold {fold_i+1}:\n-------------------')
+            num_test_batches = len(teY)//batch_size
+            t_loss, preds, labels = predict(m, num_test_batches, batch_size, 
+                                             teX, teY, timesteps, pproc)
+            print_scores(preds, labels, t_loss, 'Test')
+            save_test_output(model_param, preds, labels)
 
     model_name = model_param[:-1] if folds < 9 else model_param[:-2]
     args.outputs_path = 'outputs/'

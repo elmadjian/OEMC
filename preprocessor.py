@@ -250,6 +250,10 @@ class Preprocessor():
 
 
     def extract_features(self, x, y, conf, targets, windows, latency):
+        '''
+        Creates a training and a target tensor based on the number of
+        windows, the latency offset, number of targets, and gaze coordinates
+        '''
         ini = int(np.ceil(self.frequency * self.length))
         tr_tensor  = np.zeros((len(x)-ini, 2*len(windows))) #num X sets of features
         tgt_tensor = np.zeros(len(targets)-ini,)
@@ -282,8 +286,12 @@ class Preprocessor():
 
 
     def create_batches(self, X, Y, start, end, timesteps, randomize=False):
+        '''
+        Creates a minibatch composed of one or more timesteps that
+        can be fed into the network
+        '''
         if timesteps == 1:
-            return self._create_batches_single(X, Y, start, end, randomize)
+            return self._create_batches_single(X, Y, start, end)
         b_Y = Y[start-1:end-1]
         b_X = np.array([X[i-timesteps:i,:] for i in range(start, end)])
         if randomize:
@@ -299,7 +307,10 @@ class Preprocessor():
 
 
 
-    def _create_batches_single(self, X, Y, start, end, randomize):
+    def _create_batches_single(self, X, Y, start, end):
+        '''
+        Creates a minibatch with only one timestep
+        '''
         b_Y = Y[start:end]
         b_X = X[start:end]
         b_X = b_X.reshape(b_X.shape[0],1,b_X.shape[1])
@@ -312,6 +323,13 @@ class Preprocessor():
 
 
     def _convert_label(self, target):
+        '''
+        Performs the following conversion:
+        F: fixation -> 0
+        S: saccade -> 1
+        P: smooth pursuit -> 2
+        B: blinks/noise -> 3
+        '''
         if target == 'F':
             return 0
         if target == 'S':

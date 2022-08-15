@@ -93,10 +93,12 @@ class OnlineSimulator():
             model = CNN_LSTM(self.args.timesteps, 4, self.args.kernel_size,
                  self.args.dropout, features, self.args.lstm_layers,
                  bidirectional=True)
-        model.load_state_dict(torch.load(path))#, map_location=torch.device('cpu')))
-        self.print_parameters(model)
-        if torch.cuda.is_available():
+        if self.args.cpu:
+            model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        else:
+            model.load_state_dict(torch.load(path))
             model.cuda()
+        self.print_parameters(model)
         model.eval()
         return model
 
@@ -104,12 +106,9 @@ class OnlineSimulator():
     def _predict(self, model, sample):
         with torch.no_grad():
             sample = torch.autograd.Variable(sample, requires_grad=False)
-            print(sample.shape)
             pred = model(sample)
             layer = torch.nn.Softmax(dim=1)
             pred = layer(pred)
-            print(pred.shape)
-            input()
             pred = pred.data.max(1, keepdim=True)[1]
             return pred
 
@@ -118,7 +117,7 @@ class OnlineSimulator():
         t = self.args.timesteps
         sample = np.array([X[i-t:i]])
         sample = torch.from_numpy(sample).float()
-        if torch.cuda.is_available():
+        if not self.args.cpu:
             return sample.cuda()
         return sample
 
@@ -204,7 +203,9 @@ if __name__=='__main__':
                         '--strides',
                         required=False,
                         default=8,
-                        type=int)
+                        type=int),
+    parser.add_argument('--cpu',
+                        action='store_true')
     parser.add_argument('--out',
                         required=False,
                         default='final_outputs')
