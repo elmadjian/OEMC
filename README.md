@@ -1,4 +1,4 @@
-# Online Eye Movement Classification
+# Online Eye Movement Classification with Temporal Convolutional Networks
 
 This repository is part of a research project on online eye movement classification with 
 temporal convolutional networks. It contains the codebase for several deep neural models 
