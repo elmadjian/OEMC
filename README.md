@@ -150,6 +150,9 @@ the same ones that are available in the GazeCom dataset, except that in the case
 `x` and `y` coordinates indicate the tracked pupil position in the eye camera space
 instead of on-screen coordinates.
 
+We also include here a script called `dataset_editor.py` that allows you to
+visualize and edit both datasets.
+
 
 ## Results, outputs, and pre-trained models
 
@@ -161,8 +164,7 @@ the confusion matrices for either sample and event level, as well as the F1 scor
 for the additional experiments. In the case of the deep neural models, the general
 ROC-AUC curves are the following:
 
-<img src="results/fig_ROC_AUC_gazecom.png" width=40% />
-<img src="results/fig_ROC_AUC_hmr.png" width=40% />
+<img src="results/fig_ROC_AUC_gazecom.png" width=40% /><img src="results/fig_ROC_AUC_hmr.png" width=40% />
 
 For the sake of reproducibility, we also provide the outputs and pre-trained neural models
 for all the described experiments in our paper. You can find the full outputs in the
