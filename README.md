@@ -188,5 +188,12 @@ This work was funded by the São Paulo Research Foundation, grants 2015/26802-1 
 ### Cite this work
 
 ```
-This work is still is under peer review. We will update this section as soon as it gets published.
+@article{elmadjian:2022,
+  title={Online eye-movement classification with temporal convolutional networks},
+  author={Elmadjian, Carlos and Gonzales, Candy and Costa, Rodrigo Lima da and Morimoto, Carlos H},
+  journal={Behavior Research Methods},
+  pages={1--19},
+  year={2022},
+  publisher={Springer}
+}
 ```
